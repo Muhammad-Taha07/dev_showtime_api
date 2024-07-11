@@ -25,6 +25,7 @@ return new class extends Migration
             $table->tinyInteger('is_admin')->default(0);
             $table->tinyInteger('status')->default(0);
             $table->dateTime('reset_expiry')->nullable();
+            $table->dateTime('last_login')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
