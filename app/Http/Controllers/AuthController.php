@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\AuthRequest\SignupRequest;
+use App\Http\Requests\AuthRequest\SendCodeRequest;
 use App\Http\Requests\AuthRequest\VerificationRequest;
 use App\Http\Requests\AuthRequest\PasswordResetRequest;
 
@@ -21,9 +22,7 @@ class AuthController extends Controller
             $digits = 4;
             $mailing_address = [];
 
-            $verification_code = rand(pow(10, $digits - 1), pow(10, $digits) - 1);
-            
-            array_push($mailing_address, $data['email']);
+            $verification_code = parent::generateOtp($digits);
 
             $createUser = User::create([
                 'first_name'    =>      $data['first_name'],
@@ -64,7 +63,7 @@ class AuthController extends Controller
         }
         
     }
-
+    // Verify Code - For After Signup
     public function verifyCode(VerificationRequest $request)
     {
         try {
@@ -110,7 +109,7 @@ class AuthController extends Controller
             ], 500);
         }
     }
-
+    // Reset password - After login 
     public function resetPassword(PasswordResetRequest $request)
     {
         try {
@@ -135,5 +134,58 @@ class AuthController extends Controller
                 'message'   => $e->getMessage() . $e->getLine() . $e->getFile() . $e
             ], 500);
         }
+    }
+
+    // Resend OTP - Sending OTP via Mail & Updating previous value.
+    public function sendCode(SendCodeRequest $request)
+    {
+        try {
+            $email_array = [];
+            $digits = 4;
+            $data   = $request->validated();
+
+            $verification_code = parent::generateOtp($digits);
+            array_push($email_array, $data['email']);
+
+            // $check = Mail::raw("Traer account verification code is: $verificationCode", function ($message) use ($email) {
+            //     $message->to($email)
+            //         ->subject('Account Verification Code - Traer')->from(env('MAIL_FROM'));
+            // });
+
+            $updateData['reset_expiry']  = date("Y-m-d H:i:s", strtotime(gmdate("Y-m-d H:i:s") . " +1 day"));
+            $updateData['verify_code']   = $verification_code;
+
+            $updated = User::where('email', $data['email'])->update($updateData);
+
+            if(!$updated) {
+                return response()->json([
+                    'status'    =>  400,
+                    'success'   =>  false,
+                    'message'   =>  'Error Occured'
+                ], 400);
+            }
+
+            return response()->json([
+                'status'    =>  200,
+                'success'   =>  true,
+                'message'   =>  'OTP Sent successfully',
+                'otp_code'  =>  $verification_code,
+            ], 200);
+    
+        } catch (Exception $e) {
+            return response()->json([
+                'status'    =>  500,
+                'success'   =>  false,
+                'message'   =>  $e->getMessage() . $e->getLine() . $e->getFile() . $e
+            ], 500);
+        }
+    }
+
+    public function logout(Request $request)
+    {
+        // Revoke the token that was used to authenticate the current request...
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json(['message' => 'Logged out successfully'], 200);
     }
 }
