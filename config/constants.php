@@ -3,10 +3,8 @@
 
 return [
     'user' => [
-        'unverified'    => 0,
+        'blocked'       => 0,
         'active'        => 1,
-        'blocked'       => 2,
-        'deleted'       => 3,
     ],
 
 ];

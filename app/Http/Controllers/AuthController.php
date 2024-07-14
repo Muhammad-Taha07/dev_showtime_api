@@ -5,9 +5,13 @@ namespace App\Http\Controllers;
 use Mail;
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\UserOtp;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Http\Responses\BaseResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\AuthRequest\LoginRequest;
 use App\Http\Requests\AuthRequest\SignupRequest;
 use App\Http\Requests\AuthRequest\SendCodeRequest;
 use App\Http\Requests\AuthRequest\VerificationRequest;
@@ -15,177 +19,156 @@ use App\Http\Requests\AuthRequest\PasswordResetRequest;
 
 class AuthController extends Controller
 {
-    public function signUp(SignupRequest $request)
+    private $currentUser;
+
+    function __construct() {
+        $this->currentUser = auth('api')->user();
+    }
+    // User - Register
+    public function register(SignupRequest $request)
     {
+        DB::beginTransaction();
         try {
-            $data = $request->validated();
-            $digits = 4;
-            $mailing_address = [];
+            $data = $request->all();
 
-            $verification_code = parent::generateOtp($digits);
-
-            $createUser = User::create([
+            $user = User::create([
                 'first_name'    =>      $data['first_name'],
                 'last_name'     =>      $data['last_name'],
                 'email'         =>      $data['email'],
                 'password'      =>      Hash::make($data['password']),
-                'verify_code'   =>      $verification_code,
-                'reset_expiry'  =>      date("Y-m-d H:i:s", strtotime(gmdate("Y-m-d H:i:s") . " +1 day")),
             ]);
 
-            if(!$createUser)
-            {
-                return response()->json([
-                    'status'    =>      400,
-                    'success'   =>      false,
-                    'message'   =>      'Error Creating User'
-                ], 400);
+            if ($user) {
+                $this->sendOTP($user);
+                DB::commit();
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "User Created Successfully", $user);
+            } else {
+                return new BaseResponse(STATUS_CODE_NOTAUTHORISED, STATUS_CODE_NOTAUTHORISED, "Failed to Register account");
             }
-
-            // $send_otp = Mail::raw(env('APP_NAME') . " Verification code is: $verification_code", function ($message) use ($emailForMailing) {
-            //     $message->to($emailForMailing)
-            //         ->subject('Account Verification Code - Traer')->from(env('MAIL_FROM'));
-            // });
-
-            return response()->json([
-                'status'    =>  200,
-                'success'   =>  true,
-                'message'   =>  'User Created Successfully',
-                'data'      =>  $createUser
-            ], 200);
-
+            
+    
         } catch (Exception $e) {
-            return response()->json([
-                'status'    =>  500,
-                'success'   =>  false,
-                'message'   =>  $e->getMessage() . $e->getLine() . $e->getFile() . $e
-            ], 500);
+            DB::rollback();
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
         
     }
-    // Verify Code - For After Signup
+    // User - Login
+    public function login(LoginRequest $request)
+    {
+        DB::beginTransaction();
+
+        $token = auth('api')->attempt($request->only(['email', 'password']));
+        if (!$token) {
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "Incorrect email or password");
+        }
+
+        if ((!Auth::guard('api')->user()->is_verified)) {
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "Please verify your Account.");
+        }
+
+        // if (auth('api')->check()) {
+            $user = auth('api')->user();
+            // $agent->fcm_token fcm_token= $request->;
+            // $agent->device_id = $request->device_id;
+            // $user->save();
+        // }
+
+        if ($user && $token) {
+            // $this->sendOTP($user);
+            DB::commit();
+            // $user->token = $token;
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Logged in successfully.", $user, $token);
+        }
+    }
+    // User - OTP Verification
     public function verifyCode(VerificationRequest $request)
     {
         try {
-            $data           = $request->validated();
+            $data           = $request->all();
             $email          =   $data['email'];
             $verify_code    =   $data['verify_code'];
 
-            $userobj = new User();
-            $user    = $userobj->getUserByEmail($email);
+            // $userobj = new User();
+            $user = User::where('email', $email)->first();
+            if($user->userOtp->otp_attempt > 3) {
+                $user->status = config('constants.user.blocked');
 
-            if($verify_code == $user->verify_code) {
-                $updateData['status']       = config('constants.user.active');
-                $updateData['verify_code']  =   null;
+                return new BaseResponse(STATUS_CODE_NOTAUTHORISED, STATUS_CODE_NOTAUTHORISED, "Account has been blocked");
+            }
+            if($verify_code == $user->userOtp->code) {
 
-                $updated_user = $user->update($updateData);
-
-                if(!$updated_user) {
-                    return response()->json([
-                        'status'    => 400,
-                        'success'   => false,
-                        'message'   => 'Error verifying user'
-                    ], 400);
-                }
-
-                return response()->json([
-                    'status'    => 200,
-                    'success'   => true,
-                    'message'   => 'Success: Account Verified',
-                ], 200);
+                $user->is_verified = config('constants.user.active');
+                $user->save();
+                $token = auth('api')->login($user);
+                // $user->token = auth('api')->login($user);
+                unset($user->userOtp);
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Account Verified Successfully", $user, $token);
+            }
+            else {
+                $user->userOtp->otp_attempts += 1;
+                return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "Invalid OTP Code.");
             }
 
-            return response()->json([
-                'status'    =>  400,
-                'success'   =>  false,
-                'message'   =>  'Invalid Verification Code',
-            ], 400);
-
         } catch (Exception $e) {
-            return response()->json([
-                'status'    =>  500,
-                'success'   =>  false,
-                'message'   =>  $e->getMessage() . $e->getLine() . $e->getFile() . $e
-            ], 500);
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
     }
-    // Reset password - After login 
-    public function resetPassword(PasswordResetRequest $request)
+    // User - Send OTP Code
+    public function forgotPassword(Request $request)
     {
         try {
-            $data = $request->validated();
+            DB::beginTransaction();
+            $user = User::where('email', $request->email)->first();
+            if ($user) {
+                $this->sendOTP($user);
+                DB::commit();
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Successfully send OTP");
+            } else {
+                DB::rollBack();
+                return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "Account does not exist!");
+            }
+        } catch(Exception $e) {
+            DB::rollback();
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
+        }
+  
+    }
+    // User - Reset Password
+    public function resetPassword(Request $request)
+    {
+        DB::beginTransaction();
+        $this->currentUser->password = Hash::make($request->password);
+        $this->currentUser->save();
+        DB::commit();
 
-            $updatedData = [
-                'password' => Hash::make($data['password'])
-            ];
+        return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Successfully set password");
+    }
+    // User - Logout
+    public function logout()
+    {
+        if (auth('api')->check()) {
+            // $this->currentUser->fcm_token = null;
+            // $this->currentUser->save();
+            auth()->guard('api')->logout();
 
-            $updatedUser = User::where('email', $data['email'])->update($updatedData);
-
-            return response()->json([
-                'status'    => 200,
-                'success'   => true,
-                'message'   => 'Password reset successfully',
-            ], 200);
-
-        } catch (Exception $e) {
-            return response()->json([
-                'status'    => 500,
-                'success'   => false,
-                'message'   => $e->getMessage() . $e->getLine() . $e->getFile() . $e
-            ], 500);
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Successfully logout");
+        } else {
+            return new BaseResponse(STATUS_CODE_NOTAUTHORISED, STATUS_CODE_NOTAUTHORISED, "User unauthorized.");
         }
     }
-
-    // Resend OTP - Sending OTP via Mail & Updating previous value.
-    public function sendCode(SendCodeRequest $request)
+    // User - Sending OTP Code via Mail.
+    private function sendOTP(User $user)
     {
-        try {
-            $email_array = [];
             $digits = 4;
-            $data   = $request->validated();
+            $otp_code = rand(pow(10, $digits - 1), pow(10, $digits) - 1);
 
-            $verification_code = parent::generateOtp($digits);
-            array_push($email_array, $data['email']);
-
-            // $check = Mail::raw("Traer account verification code is: $verificationCode", function ($message) use ($email) {
-            //     $message->to($email)
-            //         ->subject('Account Verification Code - Traer')->from(env('MAIL_FROM'));
-            // });
-
-            $updateData['reset_expiry']  = date("Y-m-d H:i:s", strtotime(gmdate("Y-m-d H:i:s") . " +1 day"));
-            $updateData['verify_code']   = $verification_code;
-
-            $updated = User::where('email', $data['email'])->update($updateData);
-
-            if(!$updated) {
-                return response()->json([
-                    'status'    =>  400,
-                    'success'   =>  false,
-                    'message'   =>  'Error Occured'
-                ], 400);
-            }
-
-            return response()->json([
-                'status'    =>  200,
-                'success'   =>  true,
-                'message'   =>  'OTP Sent successfully',
-                'otp_code'  =>  $verification_code,
-            ], 200);
-    
-        } catch (Exception $e) {
-            return response()->json([
-                'status'    =>  500,
-                'success'   =>  false,
-                'message'   =>  $e->getMessage() . $e->getLine() . $e->getFile() . $e
-            ], 500);
-        }
-    }
-
-    public function logout(Request $request)
-    {
-        // Revoke the token that was used to authenticate the current request...
-        $request->user()->currentAccessToken()->delete();
-
-        return response()->json(['message' => 'Logged out successfully'], 200);
+            UserOtp::where(['user_id' => $user->id, 'is_expired' => 0])->delete();
+            UserOtp::create([
+                'code' => $otp_code,
+                'user_id' => $user->id,
+            ]);
+            // Mail::to($user->email)->send(new SendOtp($otp));
+  
     }
 }

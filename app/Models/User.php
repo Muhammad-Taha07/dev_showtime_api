@@ -3,15 +3,16 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
-    use HasApiTokens, HasFactory, Notifiable;
-
+    use HasFactory, Notifiable;
+    // HasApiTokens
     protected $guarded = [];
     /**
      * The attributes that are mass assignable.
@@ -24,6 +25,25 @@ class User extends Authenticatable
     //     'password',
     // ];
 
+/**
+ * Get the identifier that will be stored in the JWT subject claim.
+ *
+ * @return mixed
+ */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+/**
+ * Return a key value array, containing any custom claims to be added to the JWT.
+ *
+ * @return array
+ */
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -46,5 +66,10 @@ class User extends Authenticatable
     public function getUserByEmail($email)
     {
         return self::where('email', $email)->first();
+    }
+
+    public function userOtp()
+    {
+        return $this->hasOne(UserOtp::class);
     }
 }

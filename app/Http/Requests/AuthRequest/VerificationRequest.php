@@ -25,7 +25,7 @@ class VerificationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email'     =>      'required|email',
+            'email'     =>      'required|email|exists:users,email',
             'verify_code'   =>  'required|integer|digits:4',
         ];
     }
@@ -41,6 +41,7 @@ class VerificationRequest extends FormRequest
             '*.required'    =>  ':attribute is required',
             'verify_code.integer'   =>  ':attribute must be numbers ',
             'verify_code.digits'    =>  ':attribute must be of :digits digits',
+            'email.exists'  =>  'Account does not exist',
         ];
     }
 
