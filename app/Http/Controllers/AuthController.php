@@ -192,7 +192,5 @@ class AuthController extends Controller
             DB::rollback();
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
-            
-  
     }
 }
