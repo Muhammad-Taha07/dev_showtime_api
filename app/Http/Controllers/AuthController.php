@@ -16,6 +16,8 @@ use App\Http\Requests\AuthRequest\SignupRequest;
 use App\Http\Requests\AuthRequest\SendCodeRequest;
 use App\Http\Requests\AuthRequest\VerificationRequest;
 use App\Http\Requests\AuthRequest\PasswordResetRequest;
+use App\Http\Requests\AuthRequest\ResetPasswordRequest;
+use App\Http\Requests\AuthRequest\ForgotPasswordRequest;
 
 class AuthController extends Controller
 {
@@ -118,7 +120,7 @@ class AuthController extends Controller
         }
     }
     // User - Send OTP Code
-    public function forgotPassword(Request $request)
+    public function forgotPassword(ForgotPasswordRequest $request)
     {
         try {
             DB::beginTransaction();
@@ -138,7 +140,7 @@ class AuthController extends Controller
   
     }
     // User - Reset Password
-    public function resetPassword(Request $request)
+    public function resetPassword(ResetPasswordRequest $request)
     {
         try {
             DB::beginTransaction();
