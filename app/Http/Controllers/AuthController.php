@@ -27,8 +27,8 @@ class AuthController extends Controller
     // User - Register
     public function register(SignupRequest $request)
     {
-        DB::beginTransaction();
         try {
+            DB::beginTransaction();
             $data = $request->all();
 
             $user = User::create([
@@ -56,29 +56,32 @@ class AuthController extends Controller
     // User - Login
     public function login(LoginRequest $request)
     {
-        DB::beginTransaction();
+        try {
+            DB::beginTransaction();
+            $token = auth('api')->attempt($request->only(['email', 'password']));
+            if (!$token) {
+                return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "Incorrect email or password");
+            }
+    
+            if ((!Auth::guard('api')->user()->is_verified)) {
+                return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "Please verify your Account.");
+            }
+    
+            // if (auth('api')->check()) {
+                $user = auth('api')->user();
+                // $agent->fcm_token fcm_token= $request->;
+                // $agent->device_id = $request->device_id;
+                // $user->save();
+            // }
+    
+            if ($user && $token) {
+                DB::commit();
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Logged in successfully.", $user, $token);
 
-        $token = auth('api')->attempt($request->only(['email', 'password']));
-        if (!$token) {
-            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "Incorrect email or password");
-        }
-
-        if ((!Auth::guard('api')->user()->is_verified)) {
-            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "Please verify your Account.");
-        }
-
-        // if (auth('api')->check()) {
-            $user = auth('api')->user();
-            // $agent->fcm_token fcm_token= $request->;
-            // $agent->device_id = $request->device_id;
-            // $user->save();
-        // }
-
-        if ($user && $token) {
-            // $this->sendOTP($user);
-            DB::commit();
-            // $user->token = $token;
-            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Logged in successfully.", $user, $token);
+            }
+        } catch (Exception $e) {
+            DB::rollback();
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
     }
     // User - OTP Verification
@@ -137,29 +140,44 @@ class AuthController extends Controller
     // User - Reset Password
     public function resetPassword(Request $request)
     {
-        DB::beginTransaction();
-        $this->currentUser->password = Hash::make($request->password);
-        $this->currentUser->save();
-        DB::commit();
+        try {
+            DB::beginTransaction();
+            
+            $this->currentUser->password = Hash::make($request->password);
+            $this->currentUser->save();
+            
+            DB::commit();
+            
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Successfully set password");
+        } catch (Exception $e) {
+            DB::rollback();
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile . $e);
+        }
 
-        return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Successfully set password");
     }
     // User - Logout
     public function logout()
     {
-        if (auth('api')->check()) {
-            // $this->currentUser->fcm_token = null;
-            // $this->currentUser->save();
-            auth()->guard('api')->logout();
-
-            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Successfully logout");
-        } else {
-            return new BaseResponse(STATUS_CODE_NOTAUTHORISED, STATUS_CODE_NOTAUTHORISED, "User unauthorized.");
+        try {
+            if (auth('api')->check()) {
+                // $this->currentUser->fcm_token = null;
+                // $this->currentUser->save();
+                auth()->guard('api')->logout();
+    
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Successfully logout");
+            } else {
+                return new BaseResponse(STATUS_CODE_NOTAUTHORISED, STATUS_CODE_NOTAUTHORISED, "User unauthorized.");
+            }
+        } catch(Exception $e) {
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
+      
     }
     // User - Sending OTP Code via Mail.
     private function sendOTP(User $user)
     {
+        try {
+            DB::beginTransaction();
             $digits = 4;
             $otp_code = rand(pow(10, $digits - 1), pow(10, $digits) - 1);
 
@@ -168,7 +186,13 @@ class AuthController extends Controller
                 'code' => $otp_code,
                 'user_id' => $user->id,
             ]);
+            DB::commit();
             // Mail::to($user->email)->send(new SendOtp($otp));
+        } catch(Exception $e) {
+            DB::rollback();
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
+        }
+            
   
     }
 }
