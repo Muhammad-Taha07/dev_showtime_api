@@ -62,6 +62,7 @@ class SignupRequest extends FormRequest
         return [
             'first_name'        =>      'First Name',
             'last_name'         =>      'Last Name',
+            'email'             =>      'Email Address',
             'password'          =>      'Password',
             'confirm_password'  =>      'Confirm password field',
             // 'current_time'      =>      'Current time',
