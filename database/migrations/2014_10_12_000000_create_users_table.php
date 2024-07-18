@@ -17,10 +17,6 @@ return new class extends Migration
             $table->string('last_name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->string('profile_image')->nullable();
-            $table->text('address')->nullable();
-            $table->string('longitude')->nullable();
-            $table->string('latitude')->nullable();
             // $table->unsignedInteger('verify_code', FALSE)->nullable();
             $table->string('fcm_token', 255)->nullable();
             $table->dateTime('last_login')->nullable();

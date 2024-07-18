@@ -2,16 +2,25 @@
 
 namespace App\Models;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
-class UserOtp extends Model
+class UserDetails extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
-        'code', 'user_id', 'is_expired','type'
+        'user_id', 
+        'gender', 
+        'image', 
+        'address',
+        'user_age',
+        'longitude',
+        'latitude',
+        'bio',
+        'created_at',
+        'updated_at',
     ];
 
     public function users()

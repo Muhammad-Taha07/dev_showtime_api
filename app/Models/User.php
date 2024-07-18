@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\UserOtp;
+use App\Models\UserDetails;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
@@ -66,6 +68,11 @@ class User extends Authenticatable implements JWTSubject
     public function getUserByEmail($email)
     {
         return self::where('email', $email)->first();
+    }
+
+    public function userDetails()
+    {
+        return $this->hasOne(UserDetails::class);
     }
 
     public function userOtp()

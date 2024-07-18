@@ -39,16 +39,16 @@ class AuthController extends Controller
                 'email'         =>      $data['email'],
                 'password'      =>      Hash::make($data['password']),
             ]);
-
+            
             if ($user) {
                 $this->sendOTP($user);
+                $response = User::find($user->id);
                 DB::commit();
-                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "User Created Successfully", $user);
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "User Created Successfully", $response);
             } else {
                 return new BaseResponse(STATUS_CODE_NOTAUTHORISED, STATUS_CODE_NOTAUTHORISED, "Failed to Register account");
             }
-            
-    
+
         } catch (Exception $e) {
             DB::rollback();
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
@@ -64,17 +64,19 @@ class AuthController extends Controller
             if (!$token) {
                 return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "Incorrect email or password");
             }
-    
+
             if ((!Auth::guard('api')->user()->is_verified)) {
                 return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "Please verify your Account.");
             }
-    
-            // if (auth('api')->check()) {
+            if(Auth::guard('api')->user()->status == config('constants.user.blocked')) {
+                return new BaseResponse(STATUS_CODE_FORBIDDEN, STATUS_CODE_FORBIDDEN, "Access Denied: Account is banned.");
+            }
+
                 $user = auth('api')->user();
                 // $agent->fcm_token fcm_token= $request->;
-                // $agent->device_id = $request->device_id;
-                // $user->save();
-            // }
+                $user->last_login = date('Y-m-d H:i:s');
+                $user->save();
+         
     
             if ($user && $token) {
                 DB::commit();
@@ -86,6 +88,7 @@ class AuthController extends Controller
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
     }
+
     // User - OTP Verification
     public function verifyCode(VerificationRequest $request)
     {
