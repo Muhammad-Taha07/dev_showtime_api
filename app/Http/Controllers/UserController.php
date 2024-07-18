@@ -16,7 +16,7 @@ class UserController extends Controller
     function __construct() {
         $this->currentUser = auth('api')->user();
     }
-
+    // Update User Profile Function
     public function updateProfile(UpdateProfile $request)
     {
         DB::beginTransaction();
@@ -31,7 +31,7 @@ class UserController extends Controller
                 $criteria = ['user_id' => $this->currentUser->id];
                 $this->currentUser->userDetails()->updateOrCreate($criteria, $data);
                 DB::commit();
-                
+
                 $this->currentUser->load('userDetails');
                 $response = $this->currentUser->userDetails;
 
@@ -42,7 +42,7 @@ class UserController extends Controller
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
     }
-
+    // Get User Details, Mainly Shown on Profile screen
     public function getUserDetails(User $user)
     {
         try {
