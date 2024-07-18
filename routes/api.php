@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VideoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,6 +38,9 @@ Route::middleware("auth:api")->prefix('user')->group(function () {
     Route::controller(UserController::class)->group(function () {
         Route::post('/update-profile', 'updateProfile')->name('user-update-profile');
         Route::get('/get-user-details/{user}', 'getUserDetails')->name('user-details');
+    });
+    Route::controller(VideoController::class)->group(function () {
+        Route::post('/save-video', 'saveVideo')->name('user-save-video');
     });
 });
 
