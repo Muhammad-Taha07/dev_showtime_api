@@ -31,9 +31,10 @@ class UserController extends Controller
                 $criteria = ['user_id' => $this->currentUser->id];
                 $this->currentUser->userDetails()->updateOrCreate($criteria, $data);
                 DB::commit();
+                
                 $this->currentUser->load('userDetails');
                 $response = $this->currentUser->userDetails;
-                // $response =  $this->currentUser->userDetails;
+
                 return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Profile has been updated.", $response);
             
         } catch(Exception $e) {
