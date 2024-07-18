@@ -19,8 +19,8 @@ class UserController extends Controller
 
     public function updateProfile(UpdateProfile $request)
     {
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
                 $data = $request->except(['image']);
                 $oldFilePath = $this->currentUser?->userDetails?->image;
                 
@@ -30,9 +30,10 @@ class UserController extends Controller
                 
                 $criteria = ['user_id' => $this->currentUser->id];
                 $this->currentUser->userDetails()->updateOrCreate($criteria, $data);
-                $response =  $this->currentUser->userDetails;
-
                 DB::commit();
+                $this->currentUser->load('userDetails');
+                $response = $this->currentUser->userDetails;
+                // $response =  $this->currentUser->userDetails;
                 return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Profile has been updated.", $response);
             
         } catch(Exception $e) {
