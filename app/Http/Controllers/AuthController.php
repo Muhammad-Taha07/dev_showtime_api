@@ -64,9 +64,12 @@ class AuthController extends Controller
             if (!$token) {
                 return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "Incorrect email or password");
             }
-    
+
             if ((!Auth::guard('api')->user()->is_verified)) {
                 return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "Please verify your Account.");
+            }
+            if(Auth::guard('api')->user()->status == config('constants.user.blocked')) {
+                return new BaseResponse(STATUS_CODE_FORBIDDEN, STATUS_CODE_FORBIDDEN, "Access Denied: Account is banned.");
             }
 
                 $user = auth('api')->user();
@@ -85,6 +88,7 @@ class AuthController extends Controller
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
     }
+
     // User - OTP Verification
     public function verifyCode(VerificationRequest $request)
     {
