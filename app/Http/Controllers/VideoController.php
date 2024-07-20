@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Responses\BaseResponse;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\MediaRequest\CreateVideoRequest;
 
 class VideoController extends Controller
 {
@@ -17,7 +18,7 @@ class VideoController extends Controller
         $this->currentUser = auth('api')->user();
     }
 
-    public function saveVideo(Request $request)
+    public function saveVideo(CreateVideoRequest $request)
     {
         try {
             DB::beginTransaction();
