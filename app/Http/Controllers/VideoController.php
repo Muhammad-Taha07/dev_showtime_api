@@ -83,5 +83,40 @@ class VideoController extends Controller
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
     }
+
+    //Deleting User's Video
+    public function deleteVideo(Request $request) 
+    {
+        try {
+            DB::beginTransaction();
+
+            $video      = $request->attributes->get('video');
+            $mediaItem  = $video->getMedia()->first();
+
+            if ($mediaItem) {
+                $mediaItem->delete();
+            }
+
+            $video->delete();
+            DB::commit();
+
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Video deleted successfully');
+
+        } catch (Exception $e) {
+            DB::rollback();
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
+        }
+    }
+
+
+    public function getUserVideos(Request $request)
+    {
+        try {
+            
+        } catch (Exception $e) {
+            DB::rollback();
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
+        }
+    }
     
 }
