@@ -51,5 +51,37 @@ class VideoController extends Controller
         }
 
     }
+// Fetching Video with URL | For OPENING VIDEO
+    public function getVideo(Request $request)
+    {
+        try {
+            $video_id = $request->id;
+
+            $video = Video::where('id', $video_id)->first();
+
+            if(!$video) {
+                return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'Video not found');
+            }
+
+            $mediaItem = $video->getMedia();
+            $videoUrl   = $mediaItem->first()->getUrl();
+
+            // Creating Response data for API
+            $response = [
+                'user_id'       => $video->user_id,
+                'title'         => $video->title,
+                'description'   => $video->description,
+                'video_url'     => $videoUrl,
+                'created_at'    => $video->created_at,
+                'updated_at'    => $video->updated_at,
+            ];
+
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Video Fetched successfully", $response);
+            
+        } catch (Exception $e) {
+            DB::rollback();
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
+        }
+    }
     
 }
