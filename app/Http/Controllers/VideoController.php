@@ -54,7 +54,7 @@ class VideoController extends Controller
 
     }
     
-    // Fetching Video with URL | For OPENING VIDEO
+    // Fetching Single Video |
     public function getVideo(Request $request)
     {
         try {
@@ -67,16 +67,22 @@ class VideoController extends Controller
             }
 
             $mediaItem = $video->getMedia();
-            $videoUrl   = $mediaItem->first()->getUrl();
+            $videoUrl  = $mediaItem->first()->getUrl();
+
+            $user      = $video->user;
 
             // Creating Response data for API
             $response = [
                 'id'            => $video->id,
-                'user_id'       => $video->user_id,
                 'title'         => $video->title,
                 'description'   => $video->description,
                 'video_url'     => $videoUrl,
-                'user'          => $video->user,
+                'views_count'   => $video->views->count(),
+                'user'          => [
+                    'user_id'   =>  $user->id,
+                    'full_name' =>  $user->fullname,
+                    'image'     =>  $user->userDetails?->image,   
+                ],
             ];
 
             return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Video Fetched successfully", $response);
@@ -114,7 +120,7 @@ class VideoController extends Controller
         }
     }
 
-    //Deleting User's Video
+    // Deleting User's Video
     public function deleteVideo(Request $request) 
     {
         try {
@@ -134,6 +140,45 @@ class VideoController extends Controller
 
         } catch (Exception $e) {
             DB::rollback();
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
+        }
+    }
+    // Open Video to View.
+    public function viewVideo(Request $request)
+    {
+        try {
+            $video_id = $request->id;
+            $this->currentUser->views()->attach($video_id);
+
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Video view recorded successfully");
+
+        } catch (Exception $e) {
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
+        }
+    }
+
+    // Get All Videos
+    public function getAllVideos()
+    {
+        try {
+           $videos = Video::all();
+
+           if(!$videos) {
+            return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'No Videos Available');
+        }
+
+        foreach ($videos as $video) {
+            $mediaItem            = $video->getFirstMedia();
+
+            $video['video_url']   = $mediaItem->getUrl();
+            $video['views_count'] = $video->views->count();
+
+            unset($video['media'], $video['views']);
+        }
+        
+        return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Videos Fetched Successfully', $videos);
+
+        } catch (Exception $e) {
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
     }
