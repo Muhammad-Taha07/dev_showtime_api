@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use App\Models\User;
 use App\Models\Video;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -57,8 +58,8 @@ class VideoController extends Controller
         try {
             $video_id = $request->id;
 
-            $video = Video::where('id', $video_id)->first();
-
+            $video = Video::with('user')->find($video_id);
+          
             if(!$video) {
                 return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'Video not found');
             }
@@ -68,12 +69,12 @@ class VideoController extends Controller
 
             // Creating Response data for API
             $response = [
+                'id'            => $video->id,
                 'user_id'       => $video->user_id,
                 'title'         => $video->title,
                 'description'   => $video->description,
                 'video_url'     => $videoUrl,
-                'created_at'    => $video->created_at,
-                'updated_at'    => $video->updated_at,
+                'user'          => $video->user,
             ];
 
             return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Video Fetched successfully", $response);
