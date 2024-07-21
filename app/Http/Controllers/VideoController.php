@@ -106,10 +106,11 @@ class VideoController extends Controller
             }
     
             foreach ($videos as $video) {
-                $mediaItem          = $video->getFirstMedia();
-                $video['video_url'] = $mediaItem->getUrl();
+                $mediaItem            = $video->getFirstMedia();
+                $video['video_url']   = $mediaItem->getUrl();
+                $video['views_count'] = $video->views->count();
 
-                unset($video['media']);
+                unset($video['media'], $video['views']);
             }
 
             return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Videos Fetched Successfully', $videos);
