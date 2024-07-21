@@ -3,29 +3,20 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Video;
 use App\Models\UserOtp;
 use App\Models\UserDetails;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
-    // HasApiTokens
+    
     protected $guarded = [];
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    // protected $fillable = [
-    //     'name',
-    //     'email',
-    //     'password',
-    // ];
 
 /**
  * Get the identifier that will be stored in the JWT subject claim.
@@ -78,5 +69,10 @@ class User extends Authenticatable implements JWTSubject
     public function userOtp()
     {
         return $this->hasOne(UserOtp::class);
+    }
+
+    public function videos()
+    {
+        return $this->hasMany(Video::class);
     }
 }
