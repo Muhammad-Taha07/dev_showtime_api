@@ -109,11 +109,27 @@ class VideoController extends Controller
         }
     }
 
-
-    public function getUserVideos(Request $request)
+    // Current User | View All User's Videos
+    public function getCurrentUserVideos(Request $request)
     {
         try {
-            
+            $user_id = $this->currentUser->id;
+
+            $videos  = Video::where('user_id', $user_id)->get();
+
+            if(!$videos) {
+                return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'Videos not found');
+            }
+    
+            foreach ($videos as $video) {
+                $mediaItem          = $video->getFirstMedia();
+                $video['video_url'] = $mediaItem->getUrl();
+
+                unset($video['media']);
+            }
+
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Videos Fetched Successfully', $videos);
+
         } catch (Exception $e) {
             DB::rollback();
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);

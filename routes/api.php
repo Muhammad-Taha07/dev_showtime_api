@@ -41,7 +41,7 @@ Route::middleware("auth:api")->prefix('user')->group(function () {
 // Video Routes
     Route::controller(VideoController::class)->group(function () {
         Route::get('/get-video/{id}', 'getVideo')->name('open-video');
-        Route::get('/get-user-videos', 'getUserVideos')->name('user-own-videos');
+        Route::get('/get-user-videos', 'getCurrentUserVideos')->name('user-own-videos');
         Route::post('/save-video', 'saveVideo')->name('user-save-video');
         Route::delete('/delete-video/{id}', 'deleteVideo')->middleware('check.video.ownership');
     });
