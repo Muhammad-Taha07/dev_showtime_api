@@ -19,6 +19,7 @@ class VideoController extends Controller
         $this->currentUser = auth('api')->user();
     }
 
+    // Creating Video
     public function saveVideo(CreateVideoRequest $request)
     {
         try {
@@ -52,7 +53,7 @@ class VideoController extends Controller
         }
 
     }
-// Fetching Video with URL | For OPENING VIDEO
+    // Fetching Video with URL | For OPENING VIDEO
     public function getVideo(Request $request)
     {
         try {
