@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\View;
 use App\Models\Video;
 use App\Models\UserOtp;
 use App\Models\UserDetails;
@@ -11,6 +12,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -56,6 +58,15 @@ class User extends Authenticatable implements JWTSubject
         'email_verified_at' => 'datetime',
     ];
 
+    protected $appends = [
+        'fullname'
+    ];
+
+    public function getFullnameAttribute()
+    {
+        return $this->first_name . ' ' . $this->last_name;
+    }
+
     public function getUserByEmail($email)
     {
         return self::where('email', $email)->first();
@@ -74,5 +85,15 @@ class User extends Authenticatable implements JWTSubject
     public function videos()
     {
         return $this->hasMany(Video::class);
+    }
+
+    // public function views()
+    // {
+    //     return $this->hasMany(View::class);
+    // }
+
+    public function views(): BelongsToMany
+    {
+        return $this->belongsToMany(Video::class,View::class,'user_id','video_id')->withTimestamps();
     }
 }

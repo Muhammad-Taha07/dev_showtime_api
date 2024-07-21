@@ -24,4 +24,9 @@ class Video extends Model implements HasMedia
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function views()
+    {
+        return $this->hasMany(View::class);
+    }
 }
