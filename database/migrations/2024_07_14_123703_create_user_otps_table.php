@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('user_otps', function (Blueprint $table) {
             $table->id();
-            // $table->string('code', 64);
             $table->unsignedBigInteger('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unsignedInteger('code',false)->nullable();
             $table->integer('otp_attempts')->default(0)->nullable();
