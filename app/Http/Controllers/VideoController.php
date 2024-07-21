@@ -53,6 +53,7 @@ class VideoController extends Controller
         }
 
     }
+    
     // Fetching Video with URL | For OPENING VIDEO
     public function getVideo(Request $request)
     {
@@ -86,30 +87,6 @@ class VideoController extends Controller
         }
     }
 
-    //Deleting User's Video
-    public function deleteVideo(Request $request) 
-    {
-        try {
-            DB::beginTransaction();
-
-            $video      = $request->attributes->get('video');
-            $mediaItem  = $video->getMedia()->first();
-
-            if ($mediaItem) {
-                $mediaItem->delete();
-            }
-
-            $video->delete();
-            DB::commit();
-
-            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Video deleted successfully');
-
-        } catch (Exception $e) {
-            DB::rollback();
-            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
-        }
-    }
-
     // Current User | View All User's Videos
     public function getCurrentUserVideos(Request $request)
     {
@@ -130,6 +107,30 @@ class VideoController extends Controller
             }
 
             return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Videos Fetched Successfully', $videos);
+
+        } catch (Exception $e) {
+            DB::rollback();
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
+        }
+    }
+
+    //Deleting User's Video
+    public function deleteVideo(Request $request) 
+    {
+        try {
+            DB::beginTransaction();
+
+            $video      = $request->attributes->get('video');
+            $mediaItem  = $video->getMedia()->first();
+
+            if ($mediaItem) {
+                $mediaItem->delete();
+            }
+
+            $video->delete();
+            DB::commit();
+
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Video deleted successfully');
 
         } catch (Exception $e) {
             DB::rollback();
