@@ -16,6 +16,7 @@ class UserController extends Controller
     function __construct() {
         $this->currentUser = auth('api')->user();
     }
+
     // Update User Profile Function
     public function updateProfile(UpdateProfile $request)
     {
@@ -42,6 +43,7 @@ class UserController extends Controller
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
     }
+    
     // Get User Details, Mainly Shown on Profile screen
     public function getUserDetails(User $user)
     {
