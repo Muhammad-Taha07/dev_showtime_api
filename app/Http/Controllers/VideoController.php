@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Responses\BaseResponse;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\MediaRequest\VideoLikeRequest;
 use App\Http\Requests\MediaRequest\CreateVideoRequest;
 
 class VideoController extends Controller
@@ -183,6 +184,28 @@ class VideoController extends Controller
 
         } catch (Exception $e) {
             DB::rollback();
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
+        }
+    }
+
+    // Like Module
+    public function toggleLikeDislike(VideoLikeRequest $request)
+    {
+        try {
+            $video_id = $request->video_id;
+            
+            if($this->currentUser->likeVideos()->where('video_id', $video_id)->exists()) 
+            {
+                $this->currentUser->likeVideos()->detach($video_id);
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Video Unliked.");
+            } else {
+                $this->currentUser->likeVideos()->attach($video_id, ['rating' => $request->rating]);
+                
+                // Notification needed for other user.
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Video liked.");
+            }
+
+        } catch (Exception $e) {
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
     }
