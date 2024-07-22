@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\AuthRequest;
 
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ResetPasswordRequest extends FormRequest
