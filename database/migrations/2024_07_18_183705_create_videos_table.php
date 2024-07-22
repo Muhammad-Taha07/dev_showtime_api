@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('title');
             $table->string('url')->nullable();
             $table->text('description')->nullable();
+            $table->integer('status')->default(0);
             $table->timestamps();
             $table->softDeletes();
         });
