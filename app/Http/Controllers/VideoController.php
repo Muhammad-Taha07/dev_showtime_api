@@ -29,6 +29,7 @@ class VideoController extends Controller
                 'user_id'       =>  $this->currentUser->id,
                 'title'         =>  $request->title,
                 'description'   =>  $request->description,
+                'status'        =>  config('constants.video.pending'),
             ];
             
             // Creating the video record
@@ -42,10 +43,11 @@ class VideoController extends Controller
                 'user_id'       => $video->user_id,
                 'title'         => $video->title,
                 'description'   => $video->description,
+                'status'        => $video->status,
                 'video_url'     => $mediaItem->getUrl(),
             ];
 
-            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Video Uploaded Successfully", $response);
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Video Uploaded Successfully, Waiting for admin Approval.", $response);
             
         } catch (Exception $e) {
             DB::rollback();
@@ -53,8 +55,34 @@ class VideoController extends Controller
         }
 
     }
+
+    // Get All Videos
+    public function getAllVideos()
+    {
+        try {
+            $videos = Video::where('status', config('constants.video.approved'))->get();
+
+            if(!$videos) {
+            return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'No Videos Available');
+        }
+
+        foreach ($videos as $video) {
+            $mediaItem            = $video->getFirstMedia();
+
+            $video['video_url']   = $mediaItem->getUrl();
+            $video['views_count'] = $video->views->count();
+
+            unset($video['media'], $video['views']);
+        }
+        
+        return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Videos Fetched Successfully', $videos);
+
+        } catch (Exception $e) {
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
+        }
+    }
     
-    // Fetching Single Video |
+    // Fetching Single Video | Open Video
     public function getVideo(Request $request)
     {
         try {
@@ -99,7 +127,7 @@ class VideoController extends Controller
         try {
             $user_id = $this->currentUser->id;
 
-            $videos  = Video::where('user_id', $user_id)->get();
+            $videos  = Video::where('user_id', $user_id)->where('status', config('constants.video.approved'))->get();
 
             if(!$videos) {
                 return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'Videos not found');
@@ -117,6 +145,20 @@ class VideoController extends Controller
 
         } catch (Exception $e) {
             DB::rollback();
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
+        }
+    }
+
+    // Open Video to View.
+    public function viewVideo(Request $request)
+    {
+        try {
+            $video_id = $request->id;
+            $this->currentUser->views()->attach($video_id);
+
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Video view recorded successfully");
+
+        } catch (Exception $e) {
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
     }
@@ -144,44 +186,5 @@ class VideoController extends Controller
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
     }
-    // Open Video to View.
-    public function viewVideo(Request $request)
-    {
-        try {
-            $video_id = $request->id;
-            $this->currentUser->views()->attach($video_id);
 
-            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Video view recorded successfully");
-
-        } catch (Exception $e) {
-            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
-        }
-    }
-
-    // Get All Videos
-    public function getAllVideos()
-    {
-        try {
-           $videos = Video::all();
-
-           if(!$videos) {
-            return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'No Videos Available');
-        }
-
-        foreach ($videos as $video) {
-            $mediaItem            = $video->getFirstMedia();
-
-            $video['video_url']   = $mediaItem->getUrl();
-            $video['views_count'] = $video->views->count();
-
-            unset($video['media'], $video['views']);
-        }
-        
-        return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Videos Fetched Successfully', $videos);
-
-        } catch (Exception $e) {
-            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
-        }
-    }
-    
 }
