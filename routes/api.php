@@ -46,6 +46,8 @@ Route::middleware("auth:api")->prefix('user')->group(function () {
         Route::post('/save-video', 'saveVideo')->name('user-save-video');
         Route::delete('/delete-video/{id}', 'deleteVideo')->middleware('check.video.ownership');
         Route::post('/view-video/{id}', 'viewVideo')->name('view-video');
+
+        Route::post('/like-video', 'toggleLikeDislike')->name('user-like-video');
     });
 });
 

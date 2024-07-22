@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\View;
 use App\Models\Video;
+use App\Models\VideoLike;
 use App\Models\UserOtp;
 use App\Models\UserDetails;
 use Laravel\Sanctum\HasApiTokens;
@@ -21,10 +22,10 @@ class User extends Authenticatable implements JWTSubject
     protected $guarded = [];
 
 /**
- * Get the identifier that will be stored in the JWT subject claim.
- *
- * @return mixed
- */
+* Get the identifier that will be stored in the JWT subject claim.
+*
+* @return mixed
+*/
     public function getJWTIdentifier()
     {
         return $this->getKey();
@@ -87,10 +88,10 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Video::class);
     }
 
-    // public function views()
-    // {
-    //     return $this->hasMany(View::class);
-    // }
+    public function likeVideos(): BelongsToMany
+    {
+        return $this->belongsToMany(Video::class,VideoLike::class,'user_id','video_id')->withTimestamps();
+    }
 
     public function views(): BelongsToMany
     {
