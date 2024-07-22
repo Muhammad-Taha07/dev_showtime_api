@@ -20,13 +20,29 @@ class Video extends Model implements HasMedia
         'description',
     ];
 
-    public function user()
-    {
+    public function user() {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function views()
-    {
+    public function views() {
         return $this->hasMany(View::class);
+    }
+    
+    public function getStatusAttribute($value) {
+
+        switch($value){
+            case 0:
+                $value = 'Pending';
+                break;
+            
+            case 1:
+                $value = 'Approved';
+                break;
+
+            case 2:
+                $value = 'Rejected';
+                break;
+        }
+        return $value;
     }
 }
