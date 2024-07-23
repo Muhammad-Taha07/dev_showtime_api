@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VideoController;
+use App\Http\Controllers\MediaController;
 use App\Http\Controllers\CommentController;
 
 /*
@@ -40,15 +41,16 @@ Route::middleware("auth:api")->prefix('user')->group(function () {
     });
 
 // Video Routes
-    Route::controller(VideoController::class)->group(function () {
-        Route::get('/get-all-videos', 'getAllVideos')->name('get-all-videos');
-        Route::get('/get-video/{id}', 'getVideo')->name('open-video');
-        Route::get('/get-user-videos', 'getCurrentUserVideos')->name('user-own-videos');
-        Route::post('/save-video', 'saveVideo')->name('user-save-video');
-        Route::delete('/delete-video/{id}', 'deleteVideo')->middleware('check.video.ownership');
+    Route::controller(MediaController::class)->group(function () {
+        Route::get('/get-all-medias', 'getAllMedias')->name('get-all-medias');
+        Route::get('/get-media/{id}', 'getMedia')->name('open-media');
+        Route::get('/get-user-medias', 'getCurrentUserMedias')->name('user-own-medias');
+        Route::post('/save-media', 'saveMedia')->name('user-save-media');
+        Route::delete('/delete-media/{id}', 'deleteMedia')->middleware('check.video.ownership');
         Route::post('/view-video/{id}', 'viewVideo')->name('view-video');
         Route::post('/like-video', 'toggleLikeDislike')->name('user-like-video');
     });
+
 // Comment Routes
     Route::controller(CommentController::class)->group(function () {
         Route::get('/get-comments/{id}', 'getComments')->name('get-comments');
