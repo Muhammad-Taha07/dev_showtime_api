@@ -22,7 +22,7 @@ class VideoLikeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'video_id' => 'required|exists:videos,id',
+            'media_id' => 'required|exists:media_collections,id',
         ];
     }
 }

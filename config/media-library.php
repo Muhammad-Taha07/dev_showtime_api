@@ -272,4 +272,18 @@ return [
      * disabled lazy loading globally in the service provider.
      */
     'force_lazy_loading' => env('FORCE_MEDIA_LIBRARY_LAZY_LOADING', true),
+
+    'conversions' => [
+        'thumbnail' => [
+            'video' => [
+                'thumbnails' => [
+                    [
+                        'name' => 'thumbnail',
+                        'format' => 'png',
+                        'generated_conversions' => ['preview'],
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

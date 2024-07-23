@@ -3,7 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use App\Models\Video;
+use App\Models\MediaCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Responses\BaseResponse;
@@ -19,20 +19,20 @@ class CheckVideoOwnership
    public function handle(Request $request, Closure $next): Response
    {
       try {
-        $video_id =  $request->id;
-        $video    =  Video::find($video_id);
+        $media_id =  $request->id;
+        $media    =  MediaCollection::find($media_id);
 
-        //Handling Video not Found
-         if(!$video) {
+        //Handling media not Found
+         if(!$media) {
             return response()->json([
               'status'    =>   404,
               'success'   =>   FALSE,
-              'message'   =>   'Video Not Found',
+              'message'   =>   'Media Not Found',
             ], 404);
          }
 
          //Checking Video Ownership
-         if (Auth::user()->id !== $video->user_id) {
+         if (Auth::user()->id !== $media->user_id) {
             
             return response()->json([
                'status'    =>   401,
@@ -41,7 +41,7 @@ class CheckVideoOwnership
             ], 401);
          }
 
-         $request->attributes->set('video', $video);
+         $request->attributes->set('media', $media);
          return $next($request);
 
       } catch (Exception $e) {

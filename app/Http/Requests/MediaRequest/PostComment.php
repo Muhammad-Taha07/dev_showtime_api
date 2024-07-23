@@ -22,7 +22,7 @@ class PostComment extends FormRequest
     public function rules(): array
     {
         return [
-            'video_id'  => 'required|exists:videos,id',
+            'media_id'  => 'required|exists:media_collections,id',
             'comment'   => 'required|string',
         ];
     }
@@ -38,7 +38,7 @@ class PostComment extends FormRequest
         return [
             '*.required'        =>   ':attribute is required',
             'comment.string'    =>   ':attribute should be in string',
-            'video_id.exists'   =>   'The selected :attribute is not found.',
+            'media_id.exists'   =>   'The selected :attribute is not found.',
         ];
     }
 
@@ -51,7 +51,7 @@ class PostComment extends FormRequest
     {
         return [
             'comment'   =>  'Comment',
-            'video_id'  =>  'Video',
+            'media_id'  =>  'Media File',
         ];
     }
 }

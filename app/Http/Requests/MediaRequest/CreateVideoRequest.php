@@ -24,7 +24,7 @@ class CreateVideoRequest extends FormRequest
         return [
             'title'         => 'required|min:3',
             'description'   => 'required',
-            'video'         => 'required|file|mimetypes:video/mp4|max:51200'
+            'file'         => 'required|file|mimetypes:video/mp4,audio/mpeg|max:51200'
         ];
     }
 
@@ -40,9 +40,9 @@ class CreateVideoRequest extends FormRequest
         return [
             '*.required'        => ':attribute is required',
             'title.min'         => ':attribute should be minimum of :min characters',
-            'video.file'        => 'The :attribute must be a file.',
-            'video.mimetypes'   => 'The :attribute must be a video of type: :values.',
-            'video.max'         => 'The :attribute may not be greater than 50 MB in size.',
+            'file.file'        => 'The :attribute must be a file.',
+            'file.mimetypes'   => 'The :attribute must be a video of type: mp4/audio.',
+            'file.max'         => 'The :attribute may not be greater than 50 MB in size.',
         ];
     }
 
@@ -57,7 +57,7 @@ class CreateVideoRequest extends FormRequest
         return [
             'title'       => 'Title',
             'description' => 'Description',
-            'video'       => 'Video',
+            'file'       =>  'Media File',
         ];
     }
 }

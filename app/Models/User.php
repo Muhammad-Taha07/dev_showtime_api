@@ -4,7 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\View;
-use App\Models\Video;
+use App\Models\MediaCollection;
 use App\Models\VideoLike;
 use App\Models\UserOtp;
 use App\Models\UserDetails;
@@ -85,18 +85,18 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasOne(UserOtp::class);
     }
 
-    public function videos()
+    public function mediaCollection()
     {
-        return $this->hasMany(Video::class);
+        return $this->hasMany(MediaCollection::class);
     }
 
-    public function likeVideos(): BelongsToMany
+    public function likeMedias(): BelongsToMany
     {
-        return $this->belongsToMany(Video::class,VideoLike::class,'user_id','video_id')->withTimestamps();
+        return $this->belongsToMany(MediaCollection::class,VideoLike::class,'user_id','media_collection_id')->withTimestamps();
     }
 
     public function views(): BelongsToMany
     {
-        return $this->belongsToMany(Video::class,View::class,'user_id','video_id')->withTimestamps();
+        return $this->belongsToMany(MediaCollection::class,View::class,'user_id','media_collection_id')->withTimestamps();
     }
 }

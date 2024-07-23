@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Video;
 use App\Models\Comment;
+use App\Models\MediaCollection;
 use Illuminate\Http\Request;
 use App\Models\ReportedComment;
 use Illuminate\Support\Facades\DB;
@@ -25,9 +25,9 @@ class CommentController extends Controller
     public function getComments(Request $request)
     {
         try {
-            $video_id = $request->id;
+            $media_id = $request->id;
 
-            $comments = Comment::where('video_id', $video_id)
+            $comments = Comment::where('media_collection_id', $media_id)
             ->with(['user:id,email,first_name,last_name', 'user.userDetails:id,user_id,image'])->get();
 
             if($comments->isEmpty()) {
@@ -50,9 +50,9 @@ class CommentController extends Controller
             $data = $request->validated();
 
             $createComment = Comment::create([
-                'user_id'   =>  $this->currentUser->id,
-                'video_id'  =>  $data['video_id'],
-                'comment'   =>  $data['comment'],
+                'user_id'               =>  $this->currentUser->id,
+                'media_collection_id'   =>  $data['media_id'],
+                'comment'               =>  $data['comment'],
             ]);
 
             $createComment->load([

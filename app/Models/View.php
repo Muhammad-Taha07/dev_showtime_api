@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Models\User;
-use App\Models\Video;
+use App\Models\MediaCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -13,7 +13,7 @@ class View extends Model
 
     protected $fillable = [
         'user_id',
-        'video_id',
+        'media_collection_id',
         'created_at',
         'updated_at',
     ];
@@ -23,8 +23,8 @@ class View extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function video()
+    public function mediaCollection()
     {
-        return $this->belongsTo(Video::class, 'video_id');
+        return $this->belongsTo(MediaCollection::class, 'media_collection_id');
     }
 }
