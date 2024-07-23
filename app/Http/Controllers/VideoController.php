@@ -89,16 +89,19 @@ class VideoController extends Controller
         try {
             $video_id = $request->id;
 
-            $video = Video::with('user')->find($video_id);
+            // $video = Video::with('user')->find($video_id);
+            $video = Video::with(['user', 'comments' => function($query) {
+                $query->select('id', 'comment', 'video_id', 'user_id', 'created_at'); // Select only necessary fields
+            }])->find($video_id);
           
             if(!$video) {
                 return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'Video not found');
             }
 
             $mediaItem = $video->getMedia();
-            $videoUrl  = $mediaItem->first()->getUrl();
+            $videoUrl  = $mediaItem->first()?->getUrl();
 
-            $user      = $video->user;
+            $owner     = $video->user;
 
             // Creating Response data for API
             $response = [
@@ -108,10 +111,22 @@ class VideoController extends Controller
                 'video_url'     => $videoUrl,
                 'views_count'   => $video->views->count(),
                 'user'          => [
-                    'user_id'   =>  $user->id,
-                    'full_name' =>  $user->fullname,
-                    'image'     =>  $user->userDetails?->image,   
+                    'user_id'   => $owner->id,
+                    'full_name' => $owner->fullname,
+                    'image'     => $owner->userDetails?->image,
                 ],
+                'comments'      => $video->comments->map(function($comment) {
+                    return [
+                        'comment_id' => $comment->id,
+                        'comment'    => $comment->comment,
+                        'user'       => [
+                            'user_id'   => $comment->user->id,
+                            'full_name' => $comment->user->fullname,
+                            'image'     => $comment->user->userDetails->image,
+                        ],
+                        // 'created_at' => $comment->created_at->toIso8601String(),
+                    ];
+                }),
             ];
 
             return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Video Fetched successfully", $response);
