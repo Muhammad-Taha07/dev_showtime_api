@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\User;
+use App\Models\ReportedComment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,5 +22,10 @@ class Comment extends Model
     public function video()
     {
         return $this->belongsTo(Video::class, 'video_id');
+    }
+
+    public function reportedComments()
+    {
+        return $this->hasMany(ReportedComment::class);
     }
 }
