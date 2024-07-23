@@ -235,7 +235,7 @@ class MediaController extends Controller
     }
 
     // Like Module
-    public function toggleLikeDislike(VideoLikeRequest $request)
+    public function toggleLikeDislike(MediaLikeRequest $request)
     {
         try {
             $media_id = $request->media_id;

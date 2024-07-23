@@ -4,7 +4,7 @@ namespace App\Http\Requests\MediaRequest;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class VideoLikeRequest extends FormRequest
+class MediaLikeRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
