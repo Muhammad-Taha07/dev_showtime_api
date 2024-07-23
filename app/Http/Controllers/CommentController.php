@@ -123,7 +123,7 @@ class CommentController extends Controller
             // Automatic Ban user once the reporting count reaches to 3.
             if ($comment->reportedComments()->count() >= 3) {
                 $user = $comment->user;
-                $user->status = 2;
+                $user->status = config('constants.user.blocked');
                 $user->save();
             }
 
