@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VideoController;
+use App\Http\Controllers\CommentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,8 +47,11 @@ Route::middleware("auth:api")->prefix('user')->group(function () {
         Route::post('/save-video', 'saveVideo')->name('user-save-video');
         Route::delete('/delete-video/{id}', 'deleteVideo')->middleware('check.video.ownership');
         Route::post('/view-video/{id}', 'viewVideo')->name('view-video');
-
         Route::post('/like-video', 'toggleLikeDislike')->name('user-like-video');
+    });
+// Comment Routes
+    Route::controller(CommentController::class)->group(function () {
+        Route::get('/get-comments/{id}', 'getComments')->name('get-comments');
     });
 });
 
