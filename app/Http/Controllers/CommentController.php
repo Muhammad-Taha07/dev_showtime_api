@@ -78,9 +78,14 @@ class CommentController extends Controller
             if (!$comment) {
                 return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, "Comment not found.");
             }
-            
-            $comment->delete();
-            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Comment has been removed Successfully.", $comment);
+
+            if($comment->user_id == $this->currentUser->id) {
+                $comment->delete();
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Comment has been removed Successfully.", $comment);
+            }
+            else {
+                return new BaseResponse(STATUS_CODE_NOTAUTHORISED, STATUS_CODE_NOTAUTHORISED, "You're Unauthorized to perform this action.");
+            }
 
         } catch (Exception $e) {
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
