@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\User;
+use App\Models\Comment;
 use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -44,5 +45,10 @@ class Video extends Model implements HasMedia
                 break;
         }
         return $value;
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
     }
 }
