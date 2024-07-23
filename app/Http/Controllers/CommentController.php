@@ -6,10 +6,12 @@ use App\Models\User;
 use App\Models\Video;
 use App\Models\Comment;
 use Illuminate\Http\Request;
+use App\Models\ReportedComment;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Responses\BaseResponse;
 use App\Http\Requests\MediaRequest\PostComment;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\MediaRequest\ReportComment;
 
 class CommentController extends Controller
 {
@@ -19,7 +21,7 @@ class CommentController extends Controller
         $this->currentUser = auth('api')->user();
     }
 
-    // Method to fetch Comments with User details
+    // Method to fetch Comments with User details.
     public function getComments(Request $request)
     {
         try {
@@ -67,7 +69,7 @@ class CommentController extends Controller
         }
     }
 
-    // Deleting Comment Method
+    // Deleting Comment Method.
     public function deleteComment(Request $request)
     {
         try {
@@ -83,6 +85,49 @@ class CommentController extends Controller
         } catch (Exception $e) {
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
+    }
 
+    // Reporting Comment Method for Users.
+    public function reportComment(ReportComment $request)
+    {
+        try {
+            DB::beginTransaction();
+
+            $comment_id  = $request->comment_id;
+            $comment     = Comment::where('id', $comment_id)->first();
+
+            if(!$comment) {
+                return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, "Comment not found");
+            }
+
+            // Handling case for already reporting Comment.
+            $existing_report = $comment->reportedComments()
+            ->where('reporter_id', $this->currentUser->id)
+            ->first();
+
+            if ($existing_report) {
+                return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "You have already reported this comment.");
+            }
+            
+            $reporting_Data = ReportedComment::create([
+                'comment_id'   =>  $comment->id,
+                'reporter_id'  =>  $this->currentUser->id,
+                'comment'      =>  $comment->comment,
+            ]);
+
+            // Automatic Ban user once the reporting count reaches to 3.
+            if ($comment->reportedComments()->count() >= 3) {
+                $user = $comment->user;
+                $user->status = 2;
+                $user->save();
+            }
+
+            DB::commit();
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Comment have successfully been reported, Thanks!');
+
+        } catch (Exception $e) {
+            DB::rollback();
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
+        }
     }
 }
