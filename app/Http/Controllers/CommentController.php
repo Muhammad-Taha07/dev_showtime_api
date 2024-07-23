@@ -19,6 +19,7 @@ class CommentController extends Controller
         $this->currentUser = auth('api')->user();
     }
 
+    // Method to fetch Comments with User details
     public function getComments(Request $request)
     {
         try {
@@ -31,10 +32,37 @@ class CommentController extends Controller
                 return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'Comment does not exist');
             }
 
-            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Comments", $comments);
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Successfully Fetched Comments", $comments);
 
         } catch (Exception $e) {
 
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
+        }
+    }
+
+    // Post/Create Comments on Videos.
+    public function postComment(PostComment $request)
+    {
+        try {
+            DB::beginTransaction();
+            $data = $request->validated();
+
+            $createComment = Comment::create([
+                'user_id'   =>  $this->currentUser->id,
+                'video_id'  =>  $data['video_id'],
+                'comment'   =>  $data['comment'],
+            ]);
+
+            $createComment->load([
+                'user:id,email,first_name,last_name',
+                'user.userDetails:id,user_id,image',
+            ]);
+            
+            DB::commit();
+            return new BaseResponse(STATUS_CODE_CREATE, STATUS_CODE_CREATE, 'Comment Added Successfully', $createComment);
+
+        } catch (Exception $e) {
+            DB::rollback();
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
     }
