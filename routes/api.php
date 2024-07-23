@@ -54,6 +54,7 @@ Route::middleware("auth:api")->prefix('user')->group(function () {
         Route::get('/get-comments/{id}', 'getComments')->name('get-comments');
         Route::post('/post-comment', 'postComment')->name('post-comment');
         Route::delete('/delete-comment/{id}', 'deleteComment')->name('user-delete-comment');
+        Route::post('/report-comment', 'reportComment')->name('report-comment');
     });
 });
 
