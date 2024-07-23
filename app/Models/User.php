@@ -5,7 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\View;
 use App\Models\MediaCollection;
-use App\Models\VideoLike;
+use App\Models\MediaLike;
 use App\Models\UserOtp;
 use App\Models\UserDetails;
 use Laravel\Sanctum\HasApiTokens;
@@ -92,7 +92,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function likeMedias(): BelongsToMany
     {
-        return $this->belongsToMany(MediaCollection::class,VideoLike::class,'user_id','media_collection_id')->withTimestamps();
+        return $this->belongsToMany(MediaCollection::class,MediaLike::class,'user_id','media_collection_id')->withTimestamps();
     }
 
     public function views(): BelongsToMany
