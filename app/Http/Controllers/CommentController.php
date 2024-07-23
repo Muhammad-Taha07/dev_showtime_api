@@ -67,6 +67,22 @@ class CommentController extends Controller
         }
     }
 
+    // Deleting Comment Method
+    public function deleteComment(Request $request)
+    {
+        try {
+            $comment = Comment::find($request->id);
 
+            if (!$comment) {
+                return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, "Comment not found.");
+            }
+            
+            $comment->delete();
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Comment has been removed Successfully.", $comment);
 
+        } catch (Exception $e) {
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
+        }
+
+    }
 }
