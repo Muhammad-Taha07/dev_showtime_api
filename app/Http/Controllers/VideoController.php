@@ -93,6 +93,12 @@ class VideoController extends Controller
             $video = Video::with(['user', 'comments' => function($query) {
                 $query->select('id', 'comment', 'video_id', 'user_id', 'created_at'); // Select only necessary fields
             }])->find($video_id);
+
+            // $video = Video::with(['user', 'comments' => function($query) {
+            //     $query->where('status', 1)
+            //           ->select('id', 'comment', 'video_id', 'user_id', 'created_at')  
+            //           ->with('user:user_id,fullname,userDetails:id,user_id,image');
+            // }])->find($video_id);
           
             if(!$video) {
                 return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'Video not found');
