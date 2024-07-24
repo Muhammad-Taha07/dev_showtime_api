@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\User;
-use App\Models\MediaCollection;
 use Illuminate\Http\Request;
+use App\Models\MediaCollection;
 use Illuminate\Support\Facades\DB;
 use App\Http\Responses\BaseResponse;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\MediaRequest\MediaLikeRequest;
 use App\Http\Requests\MediaRequest\VideoLikeRequest;
 use App\Http\Requests\MediaRequest\CreateVideoRequest;
 
@@ -80,13 +81,13 @@ class MediaController extends Controller
 
     }
 
-    // Get All Medias
+    // Get All Medias | REQUIRED: THUMBNAIL
     public function getAllMedias(Request $request)
     {
         try {
             $media_type = $request->type;
      
-            $medias = MediaCollection::where('type', $media_type)->where('status', config('constants.media.approved'))->get();
+            $medias     = MediaCollection::where('type', $media_type)->where('status', config('constants.media.approved'))->get();
 
             if(!$medias) {
             return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'No Medias Available');
@@ -97,7 +98,6 @@ class MediaController extends Controller
             
             $media['media_url']   = $mediaItem->getUrl();
             $media['views_count'] = $media->views?->count();
-
             unset($media['media'], $media['views']);
         }
         
@@ -114,15 +114,10 @@ class MediaController extends Controller
         try {
             $media_id = $request->id;
 
-            $media = MediaCollection::with(['user', 'comments' => function($query) {
+            $media = MediaCollection::where('status', config('constants.media.approved'))->with(['user', 'comments' => function($query) {
                 $query->select('id', 'comment', 'media_collection_id', 'user_id', 'created_at');
             }])->find($media_id);
 
-            // $media = MediaCollection::with(['user', 'comments' => function($query) {
-            //     $query->where('status', 1)
-            //           ->select('id', 'comment', 'media_collection_id', 'user_id', 'created_at')  
-            //           ->with('user:user_id,fullname,userDetails:id,user_id,image');
-            // }])->find($media_id);
           
             if(!$media) {
                 return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'Media not found');
@@ -140,6 +135,7 @@ class MediaController extends Controller
                 'description'   => $media->description,
                 'media_url'     => $mediaUrl,
                 'views_count'   => $media->views->count(),
+                'media_type'    => $media->type,
                 'user'          => [
                     'user_id'   => $owner->id,
                     'full_name' => $owner->fullname,
@@ -152,12 +148,26 @@ class MediaController extends Controller
                         'user'       => [
                             'user_id'   => $comment->user->id,
                             'full_name' => $comment->user->fullname,
-                            'image'     => $comment->user->userDetails->image,
+                            'image'     => $comment->user->userDetails?->image,
                         ],
-
+                    ];
+                }), 
+                'likes'         => $media->likes->map(function($like) {
+                    return [
+                        'like_id'    => $like->id,
+                        'rating'     => $like->rating,
+                        'user'       => [
+                            'user_id'   => $like->user->id,
+                            'full_name' => $like->user->fullname,
+                        ],
                     ];
                 }),
             ];
+
+            // if ($media->type === 'audio') {
+            //     $response['no_of_times_played'] = $response['views_count'];
+            //     unset($response['views_count']);
+            // }
 
             return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Media Fetched successfully", $response);
             
@@ -171,24 +181,78 @@ class MediaController extends Controller
     public function getCurrentUserMedias(Request $request)
     {
         try {
-            $user_id = $this->currentUser->id;
+            $user_id    = $this->currentUser->id;
             $media_type = $request->type;
 
-            $medias  = MediaCollection::where('user_id', $user_id)->where('type', $media_type)->where('status', config('constants.media.approved'))->get();
+            $medias = MediaCollection::where('user_id', $user_id)->where('type', $media_type)
+            ->where('status', config('constants.media.approved'))
+            ->with([
+                'user',
+                'comments' => function($query) {
+                    $query->select('id', 'comment', 'media_collection_id', 'user_id', 'created_at')
+                    ->with('user:id,first_name,last_name');
+                },
+                'likes' => function($query) {
+                    $query->select('id', 'media_collection_id', 'user_id', 'rating')
+                    ->with('user:id,first_name,last_name');
+                }])->get();
+
 
             if($medias->isEmpty()) {
                 return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'Medias not found');
             }
+
+            $responseBody = $medias->map(function($media) {
+                $mediaItem  = $media->getFirstMedia();
+                $mediaUrl   = $mediaItem ? $mediaItem->getUrl() : null;
+                $owner      = $media->user;
     
-            foreach ($medias as $media) {
-                $mediaItem            = $media->getFirstMedia();
-                $media['media_url']   = $mediaItem->getUrl();
-                $media['views_count'] = $media->views->count();
+                return [
+                    'id'            => $media->id,
+                    'title'         => $media->title,
+                    'description'   => $media->description,
+                    'media_url'     => $mediaUrl,
+                    'views_count'   => $media->views->count(),
+                    'media_type'    => $media->type,
+                    'user'          => [
+                        'user_id'   => $owner->id,
+                        'full_name' => $owner->fullname,
+                        'image'     => $owner->userDetails?->image,
+                    ],
+                    'comments'      => $media->comments->map(function($comment) {
+                        return [
+                            'comment_id' => $comment->id,
+                            'comment'    => $comment->comment,
+                            'user'       => [
+                                'user_id'   => $comment->user->id,
+                                'full_name' => $comment->user->fullname,
+                                'image'     => $comment->user->userDetails?->image,
+                            ],
+                        ];
+                    }),
+                    'likes'         => $media->likes->map(function($like) {
+                        return [
+                            'like_id'    => $like->id,
+                            'rating'     => $like->rating,
+                            'user'       => [
+                                'user_id'   => $like->user->id,
+                                'full_name' => $like->user->fullname,
+                                'image'     => $like->user->userDetails?->image,
+                            ],
+                        ];
+                    }),
+                ];
+            });
+    
+            // foreach ($medias as $media) {
+            //     $mediaItem            = $media->getFirstMedia();
+            //     $media['media_url']   = $mediaItem->getUrl();
+            //     $media['views_count'] = $media->views->count();
 
-                unset($media['media'], $media['views']);
-            }
+            //     unset($media['media'], $media['views']);
+            // }
 
-            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Medias Fetched Successfully', $medias);
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Medias Fetched Successfully', $responseBody);
 
         } catch (Exception $e) {
             DB::rollback();
