@@ -95,6 +95,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany(MediaCollection::class,MediaLike::class,'user_id','media_collection_id')->withTimestamps();
     }
 
+        public function mediaLikes(): HasMany
+    {
+        return $this->hasMany(MediaLike::class);
+    }
+
     public function views(): BelongsToMany
     {
         return $this->belongsToMany(MediaCollection::class,View::class,'user_id','media_collection_id')->withTimestamps();
