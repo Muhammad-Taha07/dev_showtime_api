@@ -53,4 +53,9 @@ class MediaCollection extends Model implements HasMedia
     {
         return $this->hasMany(Comment::class);
     }
+    
+    public function likes()
+    {
+        return $this->hasMany(MediaLike::class);
+    }
 }
