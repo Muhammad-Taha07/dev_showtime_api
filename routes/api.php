@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\CommentController;
@@ -57,6 +58,13 @@ Route::middleware("auth:api")->prefix('user')->group(function () {
         Route::post('/post-comment', 'postComment')->name('post-comment');
         Route::delete('/delete-comment/{id}', 'deleteComment')->name('user-delete-comment');
         Route::post('/report-comment', 'reportComment')->name('report-comment');
+    });
+});
+
+// Admin Routes
+Route::middleware(['auth:api', 'check.admin'])->prefix('admin')->group(function () {
+    Route::controller(AdminController::class)->group(function () {
+        Route::get('/get-pending-media', 'getPendingMedias')->name('admin-get-pending-media');
     });
 });
 
