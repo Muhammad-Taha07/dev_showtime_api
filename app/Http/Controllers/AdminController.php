@@ -58,11 +58,19 @@ class AdminController extends Controller
                     $approval_status = config('constants.media.rejected');
                     break;
             }
-
+            
             $media = MediaCollection::where('id', $media_id)->where('status', config('constants.media.pending'))->first();
 
             if(!$media) {
                 return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, 'Media file not Found');
+            }
+
+            if($approval_status == config('constants.media.rejected')) {
+                $media->status = $approval_status;
+                $media->save();
+                
+                //Send notification to user of the Video.
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Media File has been rejected!', $media);
             }
 
             $media->status = config('constants.media.approved');
