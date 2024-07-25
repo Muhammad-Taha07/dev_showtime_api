@@ -17,21 +17,39 @@ class AdminController extends Controller
         $this->currentUser = auth('api')->user();
     }
 
-    // Function to get Pending Media Files.
-    public function getPendingMedias(Request $request)
+    // Function to get Media Files according to type & Status.
+    public function getMediaFiles(Request $request)
     {
         try {
-            $media_type = $request->type;
-            $medias     = MediaCollection::where('type', $media_type)->where('status', config('constants.media.pending'))->get();
-        
-            if(!$medias) {
+            $media_type   = $request->type;
+            $media_status = $request->status;
+
+            switch($media_status) {
+                case 'pending':
+                    $media_status = config('constants.media.pending');
+                    break;
+
+                case 'accepted':
+                    $media_status = config('constants.media.approved');
+                    break;
+
+                case 'rejected':
+                    $media_status = config('constants.media.rejected');
+                    break;
+            }
+
+            $medias = MediaCollection::withTrashed()->where('type', $media_type)->where('status', $media_status)->get();
+
+            if($medias->isEmpty()) {
                 return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'No Medias Available');
             }
             
             foreach ($medias as $media) {
-                $mediaItem            = $media->getFirstMedia();
-                $media['media_url']   = $mediaItem->getUrl();
-                unset($media['media'], $media['views']);
+                if($media->status !== 'rejected') {
+                    $mediaItem            = $media->getFirstMedia();
+                    $media['media_url']   = $mediaItem->getUrl();
+                    unset($media['media'], $media['views']);
+                }
             }
 
             return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Medias Fetched Successfully', $medias);
@@ -43,7 +61,7 @@ class AdminController extends Controller
     }
 
     // Function to Approve Media Files
-    public function approveMedia(ApproveMedia $request)
+    public function updateMediaStatus(ApproveMedia $request)
     {
         try {
             DB::beginTransaction();
