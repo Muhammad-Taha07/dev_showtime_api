@@ -65,6 +65,7 @@ Route::middleware("auth:api")->prefix('user')->group(function () {
 Route::middleware(['auth:api', 'check.admin'])->prefix('admin')->group(function () {
     Route::controller(AdminController::class)->group(function () {
         Route::get('/get-pending-media', 'getPendingMedias')->name('admin-get-pending-media');
+        Route::post('/approve-media', 'approveMedia')->name('admin-approve-media');
     });
 });
 
