@@ -97,11 +97,18 @@ class MediaController extends Controller
             $mediaItem            = $media->getFirstMedia();
             
             $media['media_url']   = $mediaItem->getUrl();
-            $media['views_count'] = $media->views?->count();
+            $media['views_count'] = $media->views?->count() ?? 0;
             unset($media['media'], $media['views']);
         }
         
-        return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Medias Fetched Successfully', $medias);
+        $sortedMedias = $medias->sortByDesc('views_count')->values();
+        $shuffledMedias = $medias->shuffle()->values();
+        
+        $data = [
+            'most_watched'  =>  $sortedMedias,
+            'trending'      =>  $shuffledMedias,
+        ];
+        return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Medias Fetched Successfully', $data);
 
         } catch (Exception $e) {
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
