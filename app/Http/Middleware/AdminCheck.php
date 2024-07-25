@@ -22,7 +22,6 @@ class AdminCheck
 
         $user = Auth::user();
         if($user->is_admin !== 1) {
-            // dd("SUCCESS");
             return response()->json(['error' => 'Forbidden'], 403);
         }
 
