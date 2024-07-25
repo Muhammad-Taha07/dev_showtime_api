@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 use App\Models\MediaCollection;
@@ -136,6 +137,27 @@ class AdminController extends Controller
                 }
 
                 return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Found Reported Comments!', $reportedComments);
+
+        } catch (Exception $e) {
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
+        }
+    }
+
+
+    public function banUserAccount(Request $request)
+    {
+        try {
+            $user_id = $request->id;
+            $user    = User::find($user_id);
+
+            if($user->status == config('constants.user.banned')) {
+                return new BaseResponse(STATUS_CODE_UNPROCESSABLE, STATUS_CODE_UNPROCESSABLE, $user->fullname . ' is already banned from the App');
+            }
+
+            $user->status = config('constants.user.banned');
+            $user = $user->save();
+            
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'User Banned Successfully', $user);
 
         } catch (Exception $e) {
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
