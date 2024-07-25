@@ -4,7 +4,7 @@
 return [
     'user' => [
         'active'        => 1,
-        'blocked'       => 2,
+        'banned'       => 2,
     ],
 
     'video' =>  [
