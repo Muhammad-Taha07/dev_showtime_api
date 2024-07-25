@@ -46,6 +46,8 @@ class AdminController extends Controller
     public function approveMedia(ApproveMedia $request)
     {
         try {
+            DB::beginTransaction();
+
             $media_id = $request->media_id;
             $approval_status = $request->status;
 
@@ -66,20 +68,34 @@ class AdminController extends Controller
             }
 
             if($approval_status == config('constants.media.rejected')) {
+                
                 $media->status = $approval_status;
                 $media->save();
-                
+
+                $mediaItem  = $media->getMedia()->first();
+
+                if ($mediaItem) {
+                    $mediaItem->delete();
+                }
+
+                $media->delete();
+                DB::commit();
+
+                unset($media['media']);
+
                 //Send notification to user of the Video.
                 return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Media File has been rejected!', $media);
             }
 
             $media->status = config('constants.media.approved');
             $media->save();
+            DB::commit();
             
             //Send notification to user of the Video.
             return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Media file approved successfully', $media);
 
         } catch (Exception $e) {
+            DB::rollback();
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
     }
