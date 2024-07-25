@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Comment;
 use Illuminate\Http\Request;
 use App\Models\MediaCollection;
+use App\Models\ReportedComment;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Responses\BaseResponse;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\AdminRequest\ApproveMedia;
 
 class AdminController extends Controller
@@ -114,6 +116,28 @@ class AdminController extends Controller
 
         } catch (Exception $e) {
             DB::rollback();
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
+        }
+    }
+
+    // Fetching Reported Comments
+    public function getReportedComments(Request $request)
+    {
+        try {
+                $reportedComments = ReportedComment::with([
+                    'comment.user:id,email,first_name,last_name', 
+                    'comment.user.userDetails:id,user_id,image', 
+                    'reporter:id,email,first_name,last_name',
+                    'reporter.userDetails:id,user_id,address,image'
+                ])->get();
+
+                if($reportedComments->isEmpty()) {
+                    return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'No Comments have been reported yet!');
+                }
+
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Found Reported Comments!', $reportedComments);
+
+        } catch (Exception $e) {
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
     }
