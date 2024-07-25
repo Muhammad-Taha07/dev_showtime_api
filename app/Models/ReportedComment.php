@@ -16,4 +16,15 @@ class ReportedComment extends Model
     {
         return $this->belongsTo(Comment::class, 'comment_id');
     }
+
+    public function reporter()
+    {
+        return $this->belongsTo(User::class, 'reporter_id'); // Ensure this matches the column name
+    }
+    
+    public function reportedBy()
+    {
+        return $this->comment->user(); // This relationship is from the Comment model
+    }
+
 }
