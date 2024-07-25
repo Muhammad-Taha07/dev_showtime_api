@@ -27,7 +27,7 @@ class CommentController extends Controller
         try {
             $media_id = $request->id;
 
-            $comments = Comment::where('media_collection_id', $media_id)
+            $comments = ReportedComment::where('media_collection_id', $media_id)
             ->with(['user:id,email,first_name,last_name', 'user.userDetails:id,user_id,image'])->get();
 
             if($comments->isEmpty()) {
@@ -53,6 +53,7 @@ class CommentController extends Controller
                 'user_id'               =>  $this->currentUser->id,
                 'media_collection_id'   =>  $data['media_id'],
                 'comment'               =>  $data['comment'],
+                // 'reason'                =>  $request->reason,
             ]);
 
             $createComment->load([
@@ -118,6 +119,7 @@ class CommentController extends Controller
                 'comment_id'   =>  $comment->id,
                 'reporter_id'  =>  $this->currentUser->id,
                 'comment'      =>  $comment->comment,
+                // 'reason'       =>  $request->reason,
             ]);
 
             // Automatic Ban user once the reporting count reaches to 3.
