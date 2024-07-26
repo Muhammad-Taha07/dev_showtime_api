@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\User;
 use App\Models\View;
 use App\Models\Comment;
+use App\Models\Favorite;
 use Spatie\MediaLibrary\HasMedia;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -57,5 +58,10 @@ class MediaCollection extends Model implements HasMedia
     public function likes()
     {
         return $this->hasMany(MediaLike::class);
+    }
+
+    public function favoritedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'favorites', 'media_collection_id', 'user_id')->withTimestamps();
     }
 }
