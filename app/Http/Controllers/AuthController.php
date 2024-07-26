@@ -68,7 +68,8 @@ class AuthController extends Controller
             if ((!Auth::guard('api')->user()->is_verified)) {
                 return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "Please verify your Account.");
             }
-            if(Auth::guard('api')->user()->status == config('constants.user.blocked')) {
+            
+            if(Auth::guard('api')->user()->status == config('constants.user.banned')) {
                 return new BaseResponse(STATUS_CODE_FORBIDDEN, STATUS_CODE_FORBIDDEN, "Access Denied: Account is banned.");
             }
 

@@ -8,6 +8,7 @@ use App\Models\MediaCollection;
 use App\Models\MediaLike;
 use App\Models\UserOtp;
 use App\Models\UserDetails;
+use App\Models\ReportedComment;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
@@ -103,5 +104,10 @@ class User extends Authenticatable implements JWTSubject
     public function views(): BelongsToMany
     {
         return $this->belongsToMany(MediaCollection::class,View::class,'user_id','media_collection_id')->withTimestamps();
+    }
+
+    public function reportedComments()
+    {
+        return $this->hasMany(ReportedComment::class, 'reporter_id'); // Ensure this matches the foreign key
     }
 }

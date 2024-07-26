@@ -35,15 +35,15 @@ class MediaCollection extends Model implements HasMedia
 
         switch($value){
             case 0:
-                $value = 'Pending';
+                $value = 'pending';
                 break;
             
             case 1:
-                $value = 'Approved';
+                $value = 'approved';
                 break;
 
             case 2:
-                $value = 'Rejected';
+                $value = 'rejected';
                 break;
         }
         return $value;
