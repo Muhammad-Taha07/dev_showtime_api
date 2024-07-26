@@ -4,10 +4,11 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\View;
-use App\Models\MediaCollection;
-use App\Models\MediaLike;
 use App\Models\UserOtp;
+use App\Models\Favorite;
+use App\Models\MediaLike;
 use App\Models\UserDetails;
+use App\Models\MediaCollection;
 use App\Models\ReportedComment;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -109,5 +110,10 @@ class User extends Authenticatable implements JWTSubject
     public function reportedComments()
     {
         return $this->hasMany(ReportedComment::class, 'reporter_id'); // Ensure this matches the foreign key
+    }
+
+    public function favorites(): BelongsToMany
+    {
+        return $this->belongsToMany(MediaCollection::class, Favorite::class, 'user_id', 'media_collection_id')->withTimestamps();
     }
 }
