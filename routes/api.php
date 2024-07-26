@@ -50,6 +50,7 @@ Route::middleware(["auth:api", "check.user.status"])->prefix('user')->group(func
         Route::delete('/delete-media/{id}', 'deleteMedia')->middleware('check.video.ownership');
         Route::post('/view-video/{id}', 'viewVideo')->name('view-video');
         Route::post('/like-video', 'toggleLikeDislike')->name('user-like-video');
+        Route::post('/favorite-toggle', 'toggleFavorite')->name('user-toggle-favorite');
     });
 
 // Comment Routes
