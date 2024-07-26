@@ -327,5 +327,25 @@ class MediaController extends Controller
         }
     }
 
+    public function toggleFavorite(Request $request)
+    {
+        try {
+            $media_id = $request->media_id;
+            $user     = $this->currentUser;
+
+            if ($user->favorites()->where('media_collection_id', $media_id)->exists()) 
+            {
+                $user->favorites()->detach($media_id);
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Media removed from favorite successfully");
+
+            } else {
+                $user->favorites()->attach($media_id);
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Media added to favorite successfully");
+            }
+
+        } catch (Exception $e) {
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);        }
+    }
+
 
 }
