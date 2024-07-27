@@ -351,26 +351,81 @@ class MediaController extends Controller
     {
         $user = $this->currentUser;
 
-        $favoriteMedias = MediaCollection::whereHas('favoritedBy', function ($query) use ($user) {
+
+
+        // $medias = MediaCollection::where('user_id', $user_id)->where('type', $media_type)
+        // ->where('status', config('constants.media.approved'))
+        // ->with([
+        //     'user',
+        //     'comments' => function($query) {
+        //         $query->select('id', 'comment', 'media_collection_id', 'user_id', 'created_at')
+        //         ->with('user:id,first_name,last_name');
+        //     },
+        //     'likes' => function($query) {
+        //         $query->select('id', 'media_collection_id', 'user_id', 'rating')
+        //         ->with('user:id,first_name,last_name');
+        //     }])->get();
+
+
+        $medias = MediaCollection::whereHas('favoritedBy', function ($query) use ($user) {
             $query->where('user_id', $user->id);
         })
         ->where('type', 'video')
-
         ->with([
             'user',
             'comments' => function($query) {
                 $query->select('id', 'comment', 'media_collection_id', 'user_id', 'created_at')
-                      ->with('user:id,first_name,last_name');
+                ->with('user:id,first_name,last_name');
             },
             'likes' => function($query) {
                 $query->select('id', 'media_collection_id', 'user_id', 'rating')
-                      ->with('user:id,first_name,last_name');
-            }
-        ])->get();
+                ->with('user:id,first_name,last_name');
+            }])->get();
 
-        return $favoriteMedias;
 
-        return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Fetched Favorite media files successfully", $favoriteMedias);
+        $responseBody = $medias->map(function($media) {
+            $mediaItem  = $media->getFirstMedia();
+            $mediaUrl   = $mediaItem ? $mediaItem->getUrl() : null;
+            $owner      = $media->user;
+
+            return [
+                'id'            => $media->id,
+                'title'         => $media->title,
+                'description'   => $media->description,
+                'media_url'     => $mediaUrl,
+                'views_count'   => $media->views->count(),
+                'media_type'    => $media->type,
+                'user'          => [
+                    'user_id'   => $owner->id,
+                    'full_name' => $owner->fullname,
+                    'image'     => $owner->userDetails?->image,
+                ],
+                'comments'      => $media->comments->map(function($comment) {
+                    return [
+                        'comment_id' => $comment->id,
+                        'comment'    => $comment->comment,
+                        'user'       => [
+                            'user_id'   => $comment->user->id,
+                            'full_name' => $comment->user->fullname,
+                            'image'     => $comment->user->userDetails?->image,
+                        ],
+                    ];
+                }),
+                'likes'         => $media->likes->map(function($like) {
+                    return [
+                        'like_id'    => $like->id,
+                        'rating'     => $like->rating,
+                        'user'       => [
+                            'user_id'   => $like->user->id,
+                            'full_name' => $like->user->fullname,
+                            'image'     => $like->user->userDetails?->image,
+                        ],
+                    ];
+                }),
+            ];
+        });
+        
+        return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Fetched Favorite media files successfully", $responseBody);
 
     }
 
