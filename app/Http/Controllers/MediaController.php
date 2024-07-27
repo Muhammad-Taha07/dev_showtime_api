@@ -347,5 +347,32 @@ class MediaController extends Controller
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);        }
     }
 
+    public function getFavoriteMedia()
+    {
+        $user = $this->currentUser;
+
+        $favoriteMedias = MediaCollection::whereHas('favoritedBy', function ($query) use ($user) {
+            $query->where('user_id', $user->id);
+        })
+        ->where('type', 'video')
+
+        ->with([
+            'user',
+            'comments' => function($query) {
+                $query->select('id', 'comment', 'media_collection_id', 'user_id', 'created_at')
+                      ->with('user:id,first_name,last_name');
+            },
+            'likes' => function($query) {
+                $query->select('id', 'media_collection_id', 'user_id', 'rating')
+                      ->with('user:id,first_name,last_name');
+            }
+        ])->get();
+
+        return $favoriteMedias;
+
+        return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Fetched Favorite media files successfully", $favoriteMedias);
+
+    }
+
 
 }

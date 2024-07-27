@@ -114,6 +114,6 @@ class User extends Authenticatable implements JWTSubject
 
     public function favorites(): BelongsToMany
     {
-        return $this->belongsToMany(MediaCollection::class, Favorite::class, 'user_id', 'media_collection_id')->withTimestamps();
+        return $this->belongsToMany(MediaCollection::class, 'favorites', 'user_id', 'media_collection_id')->withTimestamps();
     }
 }

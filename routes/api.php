@@ -51,6 +51,7 @@ Route::middleware(["auth:api", "check.user.status"])->prefix('user')->group(func
         Route::post('/view-video/{id}', 'viewVideo')->name('view-video');
         Route::post('/like-video', 'toggleLikeDislike')->name('user-like-video');
         Route::post('/favorite-toggle', 'toggleFavorite')->name('user-toggle-favorite');
+        Route::get('/get-favorite-media', 'getFavoriteMedia')->name('user-favorite-media');
     });
 
 // Comment Routes
