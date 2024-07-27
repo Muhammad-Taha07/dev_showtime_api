@@ -351,12 +351,12 @@ class MediaController extends Controller
     {
         try {
             $user = $this->currentUser;
-            $media_type = $request->type;
+            $type = $request->type;
 
             $medias = MediaCollection::whereHas('favoritedBy', function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
-            ->where('type', $media_type)
+            ->where('type', $type)
             ->with([
                 'user',
                 'comments' => function($query) {
@@ -367,6 +367,7 @@ class MediaController extends Controller
                     $query->select('id', 'media_collection_id', 'user_id', 'rating')
                     ->with('user:id,first_name,last_name');
                 }])->get();
+
 
             if($medias->isEmpty()) {
                 return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'No Media in your favorites');
