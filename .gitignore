@@ -4,8 +4,9 @@
 /public/hot
 /public/storage
 /public/uploads
-/public/medias
+/public/media
 /bootstrap/cache
+/resources/views/vendor
 /storage/*.key
 /storage/logs
 /storage
