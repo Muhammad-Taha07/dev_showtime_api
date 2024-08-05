@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use FFMpeg\FFMpeg;
 use App\Models\User;
+use App\Models\MediaContent;
 use Illuminate\Http\Request;
-use App\Models\MediaCollection;
+use FFMpeg\Coordinate\TimeCode;
 use Illuminate\Support\Facades\DB;
-use App\Http\Responses\BaseResponse;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Responses\BaseResponse;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\MediaRequest\MediaLikeRequest;
 use App\Http\Requests\MediaRequest\VideoLikeRequest;
 use App\Http\Requests\MediaRequest\CreateVideoRequest;
@@ -57,8 +60,22 @@ class MediaController extends Controller
             ];
             
             // Creating the video record
-            $media     = MediaCollection::create($data);
+            $media     = MediaContent::create($data);
             $mediaItem = $media->addMedia($request->file('file'))->toMediaCollection();
+
+            // Generate thumbnail
+            $videoPath = $mediaItem->getPath();  // Get the path of the uploaded video
+            $ffmpeg = FFMpeg::create();
+            $video = $ffmpeg->open($videoPath);
+            $frame = $video->frame(TimeCode::fromSeconds(1));
+
+            // Construct the thumbnail path in the same directory as the video
+            $thumbnailPath = dirname($videoPath) . '/thumb_' . basename($videoPath, '.' . $file->getClientOriginalExtension()) . '.jpg';
+            $frame->save($thumbnailPath);
+
+            // Manually construct the media and thumbnail URLs
+            $mediaUrl = url('medias/' . $media->id . '/' . basename($videoPath));
+            $thumbnailUrl = url('medias/' . $media->id . '/thumb_' . basename($videoPath, '.' . $file->getClientOriginalExtension()) . '.jpg');
 
             DB::commit();
 
@@ -70,6 +87,7 @@ class MediaController extends Controller
                 'status'        => $media->status,
                 'type'          => $media->type,
                 'media_url'     => $mediaItem->getUrl(),
+                'thumbnail_url' => $thumbnailUrl,
             ];
 
             return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Media Uploaded Successfully, Waiting for admin Approval.", $response);

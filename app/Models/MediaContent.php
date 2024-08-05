@@ -13,10 +13,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class MediaCollection extends Model implements HasMedia
+class MediaContent extends Model implements HasMedia
 {
     use HasFactory, SoftDeletes, InteractsWithMedia;
 
+    protected $table = 'media_collections';
+    
     protected $fillable = [
         'user_id',
         'title',
@@ -24,6 +26,7 @@ class MediaCollection extends Model implements HasMedia
         'status',
         'type',
     ];
+
 
     public function user() {
         return $this->belongsTo(User::class, 'user_id');
@@ -65,4 +68,5 @@ class MediaCollection extends Model implements HasMedia
     {
         return $this->belongsToMany(User::class, 'favorites', 'media_collection_id', 'user_id')->withTimestamps();
     }
+
 }
