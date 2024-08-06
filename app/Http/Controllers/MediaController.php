@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use FFMpeg\FFMpeg;
 use App\Models\User;
-use App\Models\MediaContent;
+use App\Models\MediaCollection;
 use Illuminate\Http\Request;
 use FFMpeg\Coordinate\TimeCode;
 use Illuminate\Support\Facades\DB;
@@ -60,22 +60,27 @@ class MediaController extends Controller
             ];
             
             // Creating the video record
-            $media     = MediaContent::create($data);
+            $media     = MediaCollection::create($data);
             $mediaItem = $media->addMedia($request->file('file'))->toMediaCollection();
 
             // Generate thumbnail
-            $videoPath = $mediaItem->getPath();  // Get the path of the uploaded video
-            $ffmpeg = FFMpeg::create();
+            $videoPath = $mediaItem->getPath();
+
+            $ffmpeg = FFMpeg::create([
+                'ffmpeg.binaries'  => base_path('storage/ffmpeg/ffmpeg/bin/ffmpeg.exe'),
+                'ffprobe.binaries' => base_path('storage/ffmpeg/ffmpeg/bin/ffprobe.exe'),
+            ]);
+
             $video = $ffmpeg->open($videoPath);
             $frame = $video->frame(TimeCode::fromSeconds(1));
 
             // Construct the thumbnail path in the same directory as the video
-            $thumbnailPath = dirname($videoPath) . '/thumb_' . basename($videoPath, '.' . $file->getClientOriginalExtension()) . '.jpg';
+            $thumbnailPath = dirname($videoPath) . '/thumb_' . basename($videoPath, '.' . $file->getClientOriginalExtension()) . '.png';
             $frame->save($thumbnailPath);
 
             // Manually construct the media and thumbnail URLs
-            $mediaUrl = url('medias/' . $media->id . '/' . basename($videoPath));
-            $thumbnailUrl = url('medias/' . $media->id . '/thumb_' . basename($videoPath, '.' . $file->getClientOriginalExtension()) . '.jpg');
+            $mediaUrl     = url('medias/' . $media->id . '/' . basename($videoPath));
+            $thumbnailUrl = url('medias/' . $media->id . '/thumb_' . basename($videoPath, '.' . $file->getClientOriginalExtension()) . '.png');
 
             DB::commit();
 
