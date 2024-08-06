@@ -344,6 +344,7 @@ class MediaController extends Controller
         }
     }
 
+    // Toggle Favorite Media File
     public function toggleFavorite(Request $request)
     {
         try {
@@ -364,6 +365,7 @@ class MediaController extends Controller
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);        }
     }
 
+    // Get Favorite Media File
     public function getFavoriteMedia(Request $request)
     {
         try {
