@@ -47,9 +47,10 @@ class MediaController extends Controller
         try {
             DB::beginTransaction();
 
-            $file     = $request->file('file');
-            $mimeType = $file->getMimeType();
-            $type     = $this->determineFileType($mimeType);
+            $file         = $request->file('file');
+            $mimeType     = $file->getMimeType();
+            $thumbnailUrl = null;
+            $type         = $this->determineFileType($mimeType);
 
             $data = [
                 'user_id'       =>  $this->currentUser->id,
@@ -64,12 +65,13 @@ class MediaController extends Controller
             $mediaItem = $media->addMedia($request->file('file'))->toMediaCollection();
 
             // Generate thumbnail
-            $videoPath = $mediaItem->getPath();
-            $thumbnailPath  = generateThumbnail($videoPath, $media->id);
-
-            // $thumbnailUrl   = url('medias/' . $media->id . '/' . basename($thumbnailPath));
-            $thumbnailUrl   = 'medias/' . $media->id . '/' . basename($thumbnailPath);
-            $media->update(['thumbnail_url' => $thumbnailUrl]);
+            if($type == 'video') {
+                $videoPath = $mediaItem->getPath();
+                $thumbnailPath  = generateThumbnail($videoPath, $media->id);
+    
+                $thumbnailUrl   = 'medias/' . $media->id . '/' . basename($thumbnailPath);
+                $media->update(['thumbnail_url' => $thumbnailUrl]);
+            }
             
             DB::commit();
 
