@@ -24,6 +24,7 @@ class MediaCollection extends Model implements HasMedia
         'description',
         'status',
         'type',
+        'thumbnail_url',
     ];
 
     public function user() {
@@ -50,6 +51,11 @@ class MediaCollection extends Model implements HasMedia
                 break;
         }
         return $value;
+    }
+
+    public function getThumbnailUrlAttribute($value)
+    {
+        return url($value);
     }
 
     public function comments()
