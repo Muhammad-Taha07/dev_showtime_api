@@ -65,23 +65,12 @@ class MediaController extends Controller
 
             // Generate thumbnail
             $videoPath = $mediaItem->getPath();
+            $thumbnailPath  = generateThumbnail($videoPath, $media->id);
 
-            $ffmpeg = FFMpeg::create([
-                'ffmpeg.binaries'  => base_path('storage/ffmpeg/ffmpeg/bin/ffmpeg.exe'),
-                'ffprobe.binaries' => base_path('storage/ffmpeg/ffmpeg/bin/ffprobe.exe'),
-            ]);
-
-            $video = $ffmpeg->open($videoPath);
-            $frame = $video->frame(TimeCode::fromSeconds(1));
-
-            // Construct the thumbnail path in the same directory as the video
-            $thumbnailPath = dirname($videoPath) . '/thumb_' . basename($videoPath, '.' . $file->getClientOriginalExtension()) . '.png';
-            $frame->save($thumbnailPath);
-
-            // Manually construct the media and thumbnail URLs
-            $mediaUrl     = url('medias/' . $media->id . '/' . basename($videoPath));
-            $thumbnailUrl = url('medias/' . $media->id . '/thumb_' . basename($videoPath, '.' . $file->getClientOriginalExtension()) . '.png');
-
+            // $thumbnailUrl   = url('medias/' . $media->id . '/' . basename($thumbnailPath));
+            $thumbnailUrl   = 'medias/' . $media->id . '/' . basename($thumbnailPath);
+            $media->update(['thumbnail_url' => $thumbnailUrl]);
+            
             DB::commit();
 
             // Creating Response data for API
@@ -96,7 +85,7 @@ class MediaController extends Controller
             ];
 
             return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Media Uploaded Successfully, Waiting for admin Approval.", $response);
-            
+
         } catch (Exception $e) {
             DB::rollback();
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
@@ -159,40 +148,75 @@ class MediaController extends Controller
             $owner     = $media->user;
 
             // Creating Response data for API
+            // $response = [
+            //     'id'            => $media->id,
+            //     'title'         => $media->title,
+            //     'description'   => $media->description,
+            //     'media_url'     => $mediaUrl,
+            //     'thumbnail_url' => $media->thumbnail_url,
+            //     'views_count'   => $media->views->count(),
+            //     'media_type'    => $media->type,
+            //     'user'          => [
+            //         'user_id'   => $owner->id,
+            //         'full_name' => $owner->fullname,
+            //         'image'     => $owner->userDetails?->image,
+            //     ],
+            //     'comments'      => $media->comments->map(function($comment) {
+            //         return [
+            //             'comment_id' => $comment->id,
+            //             'comment'    => $comment->comment,
+            //             'user'       => [
+            //                 'user_id'   => $comment->user->id,
+            //                 'full_name' => $comment->user->fullname,
+            //                 'image'     => $comment->user->userDetails?->image,
+            //             ],
+            //         ];
+            //     }), 
+            //     'likes'         => $media->likes->map(function($like) {
+            //         return [
+            //             'like_id'    => $like->id,
+            //             'rating'     => $like->rating,
+            //             'user'       => [
+            //                 'user_id'   => $like->user->id,
+            //                 'full_name' => $like->user->fullname,
+            //             ],
+            //         ];
+            //     }),
+            // ];
+
             $response = [
                 'id'            => $media->id,
                 'title'         => $media->title,
                 'description'   => $media->description,
                 'media_url'     => $mediaUrl,
+                'thumbnail_url' => $media->thumbnail_url,
                 'views_count'   => $media->views->count(),
+                'likes_count'   => $media->likes->count(),
                 'media_type'    => $media->type,
                 'user'          => [
                     'user_id'   => $owner->id,
                     'full_name' => $owner->fullname,
                     'image'     => $owner->userDetails?->image,
                 ],
-                'comments'      => $media->comments->map(function($comment) {
-                    return [
-                        'comment_id' => $comment->id,
-                        'comment'    => $comment->comment,
-                        'user'       => [
-                            'user_id'   => $comment->user->id,
-                            'full_name' => $comment->user->fullname,
-                            'image'     => $comment->user->userDetails?->image,
-                        ],
-                    ];
-                }), 
-                'likes'         => $media->likes->map(function($like) {
-                    return [
-                        'like_id'    => $like->id,
-                        'rating'     => $like->rating,
-                        'user'       => [
-                            'user_id'   => $like->user->id,
-                            'full_name' => $like->user->fullname,
-                        ],
-                    ];
-                }),
+                'comments'      => $media->comments->map(fn($comment) => [
+                    'comment_id' => $comment->id,
+                    'comment'    => $comment->comment,
+                    'user'       => [
+                        'user_id'   => $comment->user->id,
+                        'full_name' => $comment->user->fullname,
+                        'image'     => $comment->user->userDetails?->image,
+                    ],
+                ]),
+                'likes'         => $media->likes->map(fn($like) => [
+                    'like_id'    => $like->id,
+                    'rating'     => $like->rating,
+                    'user'       => [
+                        'user_id'   => $like->user->id,
+                        'full_name' => $like->user->fullname,
+                    ],
+                ]),
             ];
+            
 
             // if ($media->type === 'audio') {
             //     $response['no_of_times_played'] = $response['views_count'];
@@ -242,6 +266,7 @@ class MediaController extends Controller
                     'title'         => $media->title,
                     'description'   => $media->description,
                     'media_url'     => $mediaUrl,
+                    'thumbnail_url' => $media->thumbnail_url,
                     'views_count'   => $media->views->count(),
                     'media_type'    => $media->type,
                     'user'          => [
