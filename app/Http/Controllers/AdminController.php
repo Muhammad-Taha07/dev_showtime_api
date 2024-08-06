@@ -143,7 +143,7 @@ class AdminController extends Controller
         }
     }
 
-
+    // Ban User Account Function
     public function banUserAccount(Request $request)
     {
         try {
