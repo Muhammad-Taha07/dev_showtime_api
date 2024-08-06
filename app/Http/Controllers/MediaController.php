@@ -150,42 +150,6 @@ class MediaController extends Controller
             $owner     = $media->user;
 
             // Creating Response data for API
-            // $response = [
-            //     'id'            => $media->id,
-            //     'title'         => $media->title,
-            //     'description'   => $media->description,
-            //     'media_url'     => $mediaUrl,
-            //     'thumbnail_url' => $media->thumbnail_url,
-            //     'views_count'   => $media->views->count(),
-            //     'media_type'    => $media->type,
-            //     'user'          => [
-            //         'user_id'   => $owner->id,
-            //         'full_name' => $owner->fullname,
-            //         'image'     => $owner->userDetails?->image,
-            //     ],
-            //     'comments'      => $media->comments->map(function($comment) {
-            //         return [
-            //             'comment_id' => $comment->id,
-            //             'comment'    => $comment->comment,
-            //             'user'       => [
-            //                 'user_id'   => $comment->user->id,
-            //                 'full_name' => $comment->user->fullname,
-            //                 'image'     => $comment->user->userDetails?->image,
-            //             ],
-            //         ];
-            //     }), 
-            //     'likes'         => $media->likes->map(function($like) {
-            //         return [
-            //             'like_id'    => $like->id,
-            //             'rating'     => $like->rating,
-            //             'user'       => [
-            //                 'user_id'   => $like->user->id,
-            //                 'full_name' => $like->user->fullname,
-            //             ],
-            //         ];
-            //     }),
-            // ];
-
             $response = [
                 'id'            => $media->id,
                 'title'         => $media->title,
@@ -200,25 +164,28 @@ class MediaController extends Controller
                     'full_name' => $owner->fullname,
                     'image'     => $owner->userDetails?->image,
                 ],
-                'comments'      => $media->comments->map(fn($comment) => [
-                    'comment_id' => $comment->id,
-                    'comment'    => $comment->comment,
-                    'user'       => [
-                        'user_id'   => $comment->user->id,
-                        'full_name' => $comment->user->fullname,
-                        'image'     => $comment->user->userDetails?->image,
-                    ],
-                ]),
-                'likes'         => $media->likes->map(fn($like) => [
-                    'like_id'    => $like->id,
-                    'rating'     => $like->rating,
-                    'user'       => [
-                        'user_id'   => $like->user->id,
-                        'full_name' => $like->user->fullname,
-                    ],
-                ]),
+                'comments'      => $media->comments->map(function($comment) {
+                    return [
+                        'comment_id' => $comment->id,
+                        'comment'    => $comment->comment,
+                        'user'       => [
+                            'user_id'   => $comment->user->id,
+                            'full_name' => $comment->user->fullname,
+                            'image'     => $comment->user->userDetails?->image,
+                        ],
+                    ];
+                }), 
+                'likes'         => $media->likes->map(function($like) {
+                    return [
+                        'like_id'    => $like->id,
+                        'rating'     => $like->rating,
+                        'user'       => [
+                            'user_id'   => $like->user->id,
+                            'full_name' => $like->user->fullname,
+                        ],
+                    ];
+                }),
             ];
-            
 
             // if ($media->type === 'audio') {
             //     $response['no_of_times_played'] = $response['views_count'];
