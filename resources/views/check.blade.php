@@ -282,7 +282,7 @@
             textContext.fillStyle = "white";
             textContext.textAlign = "center";
             textContext.textBaseline = "middle";
-            textContext.fillText("I Love You", textCanvas.width / 2, textCanvas.height / 2);
+            textContext.fillText("I Love You Reeda my loif", textCanvas.width / 2, textCanvas.height / 2);
 
             requestAnimationFrame(draw);
         }
@@ -496,7 +496,7 @@ function draw() {
     textContext.fillStyle = "white";
     textContext.textAlign = "center";
     textContext.textBaseline = "middle";
-    textContext.fillText("I Love You", textCanvas.width / 2, textCanvas.height / 2);
+    textContext.fillText("I Love You Reeda", textCanvas.width / 2, textCanvas.height / 2);
 
     requestAnimationFrame(draw);
 }
