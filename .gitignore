@@ -6,11 +6,9 @@
 /public/uploads
 /public/media
 /public/medias/
-/bootstrap/cache
-/resources/views/vendor
-/storage/*.key
-/storage/logs
-/storage
+./storage/*.key
+/storage/ffmpeg
+.bootstrap*
 /vendor
 .env
 .env.backup
