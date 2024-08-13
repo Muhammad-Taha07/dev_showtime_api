@@ -81,7 +81,13 @@ class AuthController extends Controller
     
             if ($user && $token) {
                 DB::commit();
-                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Logged in successfully.", $user, $token);
+
+                $responseData = [
+                    'user' => $user,
+                    'token' => $token,
+                ];
+
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Logged in successfully.", $responseData);
 
             }
         } catch (Exception $e) {
@@ -112,7 +118,13 @@ class AuthController extends Controller
                 $token = auth('api')->login($user);
                 // $user->token = auth('api')->login($user);
                 unset($user->userOtp);
-                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Account Verified Successfully", $user, $token);
+
+                $responseData = [
+                    'user' => $user,
+                    'token' => $token,
+                ];
+
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Account Verified Successfully", $responseData);
             }
             else {
                 $user->userOtp->otp_attempts += 1;
