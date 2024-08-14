@@ -106,11 +106,13 @@ class AuthController extends Controller
 
             // $userobj = new User();
             $user = User::where('email', $email)->first();
+
             if($user->userOtp->otp_attempt > 3) {
                 $user->status = config('constants.user.blocked');
 
                 return new BaseResponse(STATUS_CODE_NOTAUTHORISED, STATUS_CODE_NOTAUTHORISED, "Account has been blocked");
             }
+
             if($verify_code == $user->userOtp->code) {
 
                 $user->is_verified = config('constants.user.active');
@@ -124,7 +126,7 @@ class AuthController extends Controller
                     'token' => $token,
                 ];
 
-                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Account Verified Successfully", $responseData);
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "OTP Verified Successfully", $responseData);
             }
             else {
                 $user->userOtp->otp_attempts += 1;
