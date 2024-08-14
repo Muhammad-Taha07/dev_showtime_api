@@ -83,7 +83,7 @@ class MediaController extends Controller
                 'status'        => $media->status,
                 'type'          => $media->type,
                 'media_url'     => $mediaItem->getUrl(),
-                'thumbnail_url' => $thumbnailUrl,
+                'thumbnail_url' => env('APP_URL') . '/' . $thumbnailUrl,
             ];
 
             return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Media Uploaded Successfully, Waiting for admin Approval.", $response);
