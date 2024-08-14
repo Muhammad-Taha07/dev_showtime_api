@@ -155,7 +155,7 @@ class MediaController extends Controller
                 'title'         => $media->title,
                 'description'   => $media->description,
                 'media_url'     => $mediaUrl,
-                'thumbnail_url' => $media->thumbnail_url,
+                'thumbnail_url' => env('APP_URL') . '/' . $media->thumbnail_url,
                 'views_count'   => $media->views->count(),
                 'likes_count'   => $media->likes->count(),
                 'media_type'    => $media->type,
@@ -235,7 +235,7 @@ class MediaController extends Controller
                     'title'         => $media->title,
                     'description'   => $media->description,
                     'media_url'     => $mediaUrl,
-                    'thumbnail_url' => $media->thumbnail_url,
+                    'thumbnail_url' => env('APP_URL') . '/' . $media->thumbnail_url,
                     'views_count'   => $media->views->count(),
                     'media_type'    => $media->type,
                     'user'          => [
@@ -284,7 +284,7 @@ class MediaController extends Controller
         }
     }
 
-    // Open Video to View.
+    // Record a view into Video.
     public function viewVideo(Request $request)
     {
         try {
@@ -402,6 +402,7 @@ class MediaController extends Controller
                     'title'         => $media->title,
                     'description'   => $media->description,
                     'media_url'     => $mediaUrl,
+                    'thumbnail_url' => env('APP_URL') . '/' . $media->thumbnail_url,
                     'views_count'   => $media->views->count(),
                     'media_type'    => $media->type,
                     'user'          => [
