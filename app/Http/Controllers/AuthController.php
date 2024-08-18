@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Mail;
 use Carbon\Carbon;
 use App\Models\User;
+use App\Mail\SendMail;
 use App\Models\UserOtp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,10 @@ class AuthController extends Controller
     function __construct() {
         $this->currentUser = auth('api')->user();
     }
+
+    public function checkview() {
+        return view('email_views.register_email');
+    }
     // User - Register
     public function register(SignupRequest $request)
     {
@@ -41,8 +46,10 @@ class AuthController extends Controller
             ]);
             
             if ($user) {
-                $this->sendOTP($user);
+                $message = REGISTRATION_SUCCESS;
+                $this->sendOTP($user, $message);
                 $response = User::find($user->id);
+                $response['user'] = $message;
                 DB::commit();
                 return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "User Created Successfully", $response);
             } else {
@@ -194,7 +201,7 @@ class AuthController extends Controller
       
     }
     // User - Sending OTP Code via Mail.
-    private function sendOTP(User $user)
+    private function sendOTP(User $user, $message)
     {
         try {
             DB::beginTransaction();
@@ -207,7 +214,13 @@ class AuthController extends Controller
                 'user_id' => $user->id,
             ]);
             DB::commit();
-            // Mail::to($user->email)->send(new SendOtp($otp));
+
+            $details = [
+                'otp_code'  =>  $otp_code,
+                'message'   =>  $message
+            ];
+
+            Mail::to($user->email)->send(new SendMail($details));
         } catch(Exception $e) {
             DB::rollback();
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
