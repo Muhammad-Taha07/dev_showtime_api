@@ -108,12 +108,12 @@ class AuthController extends Controller
             $email          =   $data['email'];
             $verify_code    =   $data['verify_code'];
 
-            // $userobj = new User();
             $user = User::where('email', $email)->first();
 
-            if($user->userOtp->otp_attempt > 3) {
+            if ($user->userOtp->otp_attempts > 3 || $user->status == config('constants.user.banned')) {
                 $user->status = config('constants.user.blocked');
-
+                $user->save();
+    
                 return new BaseResponse(STATUS_CODE_NOTAUTHORISED, STATUS_CODE_NOTAUTHORISED, "Account has been blocked");
             }
 
@@ -136,6 +136,8 @@ class AuthController extends Controller
             }
             else {
                 $user->userOtp->otp_attempts += 1;
+                $user->userOtp->save();
+
                 return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "Invalid OTP Code.");
             }
 
