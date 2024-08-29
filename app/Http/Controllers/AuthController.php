@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Mail;
 use Carbon\Carbon;
 use App\Models\User;
+use App\Mail\SendMail;
 use App\Models\UserOtp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,7 @@ class AuthController extends Controller
     function __construct() {
         $this->currentUser = auth('api')->user();
     }
+
     // User - Register
     public function register(SignupRequest $request)
     {
@@ -41,8 +43,10 @@ class AuthController extends Controller
             ]);
             
             if ($user) {
-                $this->sendOTP($user);
+                $message = REGISTRATION_SUCCESS;
+                $this->sendOTP($user, $message);
                 $response = User::find($user->id);
+                $response['message'] = $message;
                 DB::commit();
                 return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "User Created Successfully", $response);
             } else {
@@ -100,25 +104,27 @@ class AuthController extends Controller
     public function verifyCode(VerificationRequest $request)
     {
         try {
-            $data           = $request->all();
+            $data           =   $request->all();
             $email          =   $data['email'];
             $verify_code    =   $data['verify_code'];
 
-            // $userobj = new User();
             $user = User::where('email', $email)->first();
 
-            if($user->userOtp->otp_attempt > 3) {
+            if ($user->userOtp->otp_attempts > 3 || $user->status == config('constants.user.banned')) {
                 $user->status = config('constants.user.blocked');
-
+                $user->save();
+    
                 return new BaseResponse(STATUS_CODE_NOTAUTHORISED, STATUS_CODE_NOTAUTHORISED, "Account has been blocked");
             }
+
+            // Increment logic here...
 
             if($verify_code == $user->userOtp->code) {
 
                 $user->is_verified = config('constants.user.active');
                 $user->save();
                 $token = auth('api')->login($user);
-                // $user->token = auth('api')->login($user);
+            
                 unset($user->userOtp);
 
                 $responseData = [
@@ -130,6 +136,8 @@ class AuthController extends Controller
             }
             else {
                 $user->userOtp->otp_attempts += 1;
+                $user->userOtp->save();
+
                 return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "Invalid OTP Code.");
             }
 
@@ -142,22 +150,28 @@ class AuthController extends Controller
     {
         try {
             DB::beginTransaction();
-            $user = User::where('email', $request->email)->first();
+
+            $user    = User::where('email', $request->email)->first();
+            $message = FORGOT_PASSWORD;
+
             if ($user) {
-                $this->sendOTP($user);
+                $this->sendOTP($user, $message);
                 DB::commit();
+                
                 return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Successfully send OTP");
             } else {
+                
                 DB::rollBack();
                 return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "Account does not exist!");
             }
         } catch(Exception $e) {
+            
             DB::rollback();
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
   
     }
-    // User - Reset Password
+    // User - Reset Password (Authorization Required)
     public function resetPassword(ResetPasswordRequest $request)
     {
         try {
@@ -170,6 +184,7 @@ class AuthController extends Controller
             
             return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Successfully set password");
         } catch (Exception $e) {
+            
             DB::rollback();
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile . $e);
         }
@@ -193,8 +208,9 @@ class AuthController extends Controller
         }
       
     }
+
     // User - Sending OTP Code via Mail.
-    private function sendOTP(User $user)
+    private function sendOTP(User $user, $message)
     {
         try {
             DB::beginTransaction();
@@ -207,7 +223,13 @@ class AuthController extends Controller
                 'user_id' => $user->id,
             ]);
             DB::commit();
-            // Mail::to($user->email)->send(new SendOtp($otp));
+
+            $details = [
+                'otp_code'  =>  $otp_code,
+                'message'   =>  $message
+            ];
+
+            Mail::to($user->email)->send(new SendMail($details));
         } catch(Exception $e) {
             DB::rollback();
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);

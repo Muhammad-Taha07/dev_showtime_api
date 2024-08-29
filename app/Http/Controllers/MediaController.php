@@ -77,6 +77,7 @@ class MediaController extends Controller
 
             // Creating Response data for API
             $response = [
+                'id'            => $media->id,
                 'user_id'       => $media->user_id,
                 'title'         => $media->title,
                 'description'   => $media->description,
@@ -306,6 +307,14 @@ class MediaController extends Controller
 
             $media      = $request->attributes->get('media');
             $mediaItem  = $media->getMedia()->first();
+
+            // Delete the thumbnail file
+            $thumbnailPath = str_replace(url('/'), public_path(), $media->thumbnail_url); 
+            // $thumbnailPath = str_replace('/', DIRECTORY_SEPARATOR, $thumbnailPath);
+
+            if (file_exists($thumbnailPath)) {
+                unlink($thumbnailPath);
+            }
 
             if ($mediaItem) {
                 $mediaItem->delete();

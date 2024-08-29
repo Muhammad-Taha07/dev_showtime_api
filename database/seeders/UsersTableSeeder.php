@@ -30,7 +30,7 @@ class UsersTableSeeder extends Seeder
             [
                 'first_name' => 'Home',
                 'last_name' => 'Lander',
-                'email' => 'user1@gmail.com',
+                'email' => 'user1@yopmail.com',
                 'password' => Hash::make('asd123$A'),
                 'is_verified' => 1,
                 'is_admin' => 0,
@@ -39,7 +39,7 @@ class UsersTableSeeder extends Seeder
             [
                 'first_name' => 'William',
                 'last_name' => 'Butcher',
-                'email' => 'user2@gmail.com',
+                'email' => 'user2@yopmail.com',
                 'password' => Hash::make('asd123$A'),
                 'is_verified' => 1,
                 'is_admin' => 0,
@@ -48,7 +48,7 @@ class UsersTableSeeder extends Seeder
             [
                 'first_name' => 'Samuel',
                 'last_name' => 'Jackson',
-                'email' => 'user3@gmail.com',
+                'email' => 'user3@yopmail.com',
                 'password' => Hash::make('asd123$A'),
                 'is_verified' => 1,
                 'is_admin' => 0,

@@ -13,3 +13,7 @@ define('STATUS_CODE_FORBIDDEN', 403);
 define('STATUS_CODE_UNPROCESSABLE', 422);
 define('STATUS_CODE_REDIRECTED', 302);
 define('LOCALHOST', '127.0.0.1');
+define('MEDIA_DELETED_ADMIN', 'Media Deleted');
+define('REGISTRATION_SUCCESS', 'Thank you for registering on Showtime. Please use the OTP code below to verify your account');
+define('FORGOT_PASSWORD', 'Please use the OTP code below to verify your account');
+define('USER_BANNED_MESSAGE', 'You have been banned from using Showtime by an Admin');

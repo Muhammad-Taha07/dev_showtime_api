@@ -44,7 +44,7 @@ class AdminController extends Controller
             $medias = MediaCollection::withTrashed()->where('type', $media_type)->where('status', $media_status)->get();
 
             if($medias->isEmpty()) {
-                return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'No Medias Available');
+                return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'No Medias Available', $medias);
             }
             
             foreach ($medias as $media) {
@@ -88,11 +88,12 @@ class AdminController extends Controller
                 return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, 'Media file not Found');
             }
 
+            // Rejecting Media
             if($approval_status == config('constants.media.rejected')) {
                 
                 $media->status = $approval_status;
                 $media->save();
-
+                // I WANT TO SEND NOTIFICATION HERE TO THE USER ABOUT THEIR MEDIA FILE REJECTED
                 $mediaItem  = $media->getMedia()->first();
 
                 if ($mediaItem) {
@@ -101,6 +102,8 @@ class AdminController extends Controller
 
                 $media->delete();
                 DB::commit();
+
+                $this->pushNotification($this->currentUser, $media->user, "Your Video has been rejected by Admin", MEDIA_DELETED_ADMIN);
 
                 unset($media['media']);
 
@@ -163,4 +166,28 @@ class AdminController extends Controller
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
     }
+
+    public function pushNotification($currentUser, $otherUser, $message, $notificationType = '') {
+        
+        $extras = [
+            'notification_type' => $notificationType,
+            'message' =>  $message,
+            'sender_id' => $currentUser->id,
+            'notify_user_type' => $currentUser->is_admin == 1 ? 'admin' : 'user',
+            'other_user_type' => $otherUser->is_admin == 1 ? 'admin' : 'user',
+        ];
+
+        $tokens[$otherUser->id] = $otherUser->fcm_token;
+        if ($otherUser->fcm_token) {
+            sendPushNotification(
+                'Showtime',
+                $message,
+                $tokens,
+                $extras,
+                true
+            );
+        }
+    }
+
+
 }
