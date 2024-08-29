@@ -44,7 +44,7 @@ class AdminController extends Controller
             $medias = MediaCollection::withTrashed()->where('type', $media_type)->where('status', $media_status)->get();
 
             if($medias->isEmpty()) {
-                return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'No Medias Available');
+                return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'No Medias Available', $medias);
             }
             
             foreach ($medias as $media) {
