@@ -23,6 +23,7 @@ class MediaContent extends Model implements HasMedia
         'user_id',
         'title',
         'description',
+        'thumbnail_url',
         'status',
         'type',
     ];
