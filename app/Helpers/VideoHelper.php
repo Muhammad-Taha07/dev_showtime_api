@@ -14,7 +14,7 @@ if(!function_exists('generateThumbnail')) {
         ]);
 
         $video = $ffmpeg->open($videoPath);
-        $frame = $video->frame(TimeCode::fromSeconds(10));
+        $frame = $video->frame(TimeCode::fromSeconds(2));
 
         $thumbnailPath = dirname($videoPath) . '/thumb_' . pathinfo($videoPath, PATHINFO_FILENAME) . '.png';
         $frame->save($thumbnailPath);
