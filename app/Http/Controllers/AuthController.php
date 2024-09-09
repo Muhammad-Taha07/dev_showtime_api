@@ -162,7 +162,7 @@ class AuthController extends Controller
             } else {
                 
                 DB::rollBack();
-                return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "Account does not exist!");
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Account does not exist!");
             }
         } catch(Exception $e) {
             
@@ -182,7 +182,7 @@ class AuthController extends Controller
             
             DB::commit();
             
-            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Successfully set password");
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Successfully set password", collect([]));
         } catch (Exception $e) {
             
             DB::rollback();

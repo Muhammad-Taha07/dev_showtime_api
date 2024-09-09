@@ -44,7 +44,7 @@ class AdminController extends Controller
             $medias = MediaCollection::withTrashed()->where('type', $media_type)->where('status', $media_status)->get();
 
             if($medias->isEmpty()) {
-                return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'No Medias Available', $medias);
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'No Medias Available', $medias);
             }
             
             foreach ($medias as $media) {
@@ -85,7 +85,7 @@ class AdminController extends Controller
             $media = MediaCollection::where('id', $media_id)->where('status', config('constants.media.pending'))->first();
 
             if(!$media) {
-                return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, 'Media file not Found');
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Media file not Found', collect([]));
             }
 
             // Rejecting Media
@@ -136,7 +136,7 @@ class AdminController extends Controller
                 ])->get();
 
                 if($reportedComments->isEmpty()) {
-                    return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'No Comments have been reported yet!');
+                    return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'No Comments have been reported yet!', $reportedComments);
                 }
 
                 return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Found Reported Comments!', $reportedComments);
@@ -154,7 +154,7 @@ class AdminController extends Controller
             $user    = User::find($user_id);
 
             if($user->status == config('constants.user.banned')) {
-                return new BaseResponse(STATUS_CODE_UNPROCESSABLE, STATUS_CODE_UNPROCESSABLE, $user->fullname . ' is already banned from the App');
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, $user->fullname . ' is already banned from the App');
             }
 
             $user->status = config('constants.user.banned');
