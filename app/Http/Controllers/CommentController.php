@@ -31,7 +31,7 @@ class CommentController extends Controller
             ->with(['user:id,email,first_name,last_name', 'user.userDetails:id,user_id,image'])->get();
 
             if($comments->isEmpty()) {
-                return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'Comment does not exist');
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Comment does not exist', $comments);
             }
 
             return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Successfully Fetched Comments", $comments);
@@ -62,7 +62,7 @@ class CommentController extends Controller
             ]);
             
             DB::commit();
-            return new BaseResponse(STATUS_CODE_CREATE, STATUS_CODE_CREATE, 'Comment Added Successfully', $createComment);
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Comment Added Successfully', $createComment);
 
         } catch (Exception $e) {
             DB::rollback();
@@ -77,7 +77,7 @@ class CommentController extends Controller
             $comment = Comment::find($request->id);
 
             if (!$comment) {
-                return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, "Comment not found.");
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Comment not found.", collect([]));
             }
 
             if($comment->user_id == $this->currentUser->id) {
@@ -85,7 +85,7 @@ class CommentController extends Controller
                 return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Comment has been removed Successfully.", $comment);
             }
             else {
-                return new BaseResponse(STATUS_CODE_NOTAUTHORISED, STATUS_CODE_NOTAUTHORISED, "You're Unauthorized to perform this action.");
+                return new BaseResponse(STATUS_CODE_NOTAUTHORISED, STATUS_CODE_NOTAUTHORISED, "You're Unauthorized to perform this action.", collect([]));
             }
 
         } catch (Exception $e) {
@@ -103,7 +103,7 @@ class CommentController extends Controller
             $comment     = Comment::where('id', $comment_id)->first();
 
             if(!$comment) {
-                return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, "Comment not found");
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Comment not found", collect([]));
             }
 
             // Handling case for already reporting Comment.
@@ -112,7 +112,7 @@ class CommentController extends Controller
             ->first();
 
             if ($existing_report) {
-                return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, "You have already reported this comment.");
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "You have already reported this comment.", collect([]));
             }
             
             $reporting_Data = ReportedComment::create([

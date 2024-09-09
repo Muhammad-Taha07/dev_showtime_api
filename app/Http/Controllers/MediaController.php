@@ -105,7 +105,7 @@ class MediaController extends Controller
             $medias     = MediaCollection::where('type', $media_type)->where('status', config('constants.media.approved'))->get();
 
             if(!$medias) {
-            return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'No Medias Available');
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'No Medias Available', $medias);
         }
 
         foreach ($medias as $media) {
@@ -142,7 +142,7 @@ class MediaController extends Controller
 
           
             if(!$media) {
-                return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'Media not found');
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Media not found', collect([]));
             }
 
             $mediaItem = $media->getMedia();
@@ -223,7 +223,7 @@ class MediaController extends Controller
 
 
             if($medias->isEmpty()) {
-                return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'Medias not found');
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'No Media files found', $medias);
             }
 
             $responseBody = $medias->map(function($media) {
@@ -398,7 +398,7 @@ class MediaController extends Controller
 
 
             if($medias->isEmpty()) {
-                return new BaseResponse(STATUS_CODE_NOTFOUND, STATUS_CODE_NOTFOUND, 'No Media in your favorites');
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'No Media exist in favorites', $medias);
             }
 
             $responseBody = $medias->map(function($media) {
