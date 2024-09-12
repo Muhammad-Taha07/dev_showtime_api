@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Responses\BaseResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\UserRequest\UpdateProfile;
 
 class UserController extends Controller
@@ -54,5 +55,26 @@ class UserController extends Controller
         } catch (Exception $e) {
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
         }   
+    }
+
+    // Delete User Account
+    public function deleteUserAccount(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            // Verify the password
+            if (!Hash::check($request->password, $user->password)) {
+                return new BaseResponse(STATUS_CODE_NOTAUTHORISED, STATUS_CODE_NOTAUTHORISED, "Invalid Password", collect([]));
+            }
+
+            // Delete the user Account
+            $user->delete();
+
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Account Deleted Successfully", collect([]));
+
+        } catch (Exception $e) {
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
+        }
     }
 }

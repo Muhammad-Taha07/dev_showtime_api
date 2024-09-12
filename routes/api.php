@@ -39,6 +39,7 @@ Route::middleware(["auth:api", "check.user.status"])->prefix('user')->group(func
     Route::controller(UserController::class)->group(function () {
         Route::post('/update-profile', 'updateProfile')->name('user-update-profile');
         Route::get('/get-user-details/{user}', 'getUserDetails')->name('user-details');
+        Route::post('/delete-account', 'deleteUserAccount')->name('user-delete-account');
     });
 
 // Video Routes
