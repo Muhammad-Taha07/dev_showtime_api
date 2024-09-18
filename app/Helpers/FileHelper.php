@@ -10,7 +10,7 @@ function uploadImage(string $entity, $oldFilePath, UploadedFile $file)
     $time    = time();
     $prefix  = '/uploads';
     $user_id = Auth::user()->id;
-   
+
     if(File::exists(public_path($oldFilePath))) {
         File::delete(public_path($oldFilePath));
     }
@@ -30,7 +30,8 @@ function uploadImage(string $entity, $oldFilePath, UploadedFile $file)
 
     $file_name = $time . '_' . $image_name;
     $image->move($destination_path, $file_name);
-
-    return $prefix . '/' . $path . '/' . $file_name;
+    $imageURL = env('APP_URL') . $prefix . '/' . $path . '/' . $file_name;
+    
+    return $imageURL;
 
 }

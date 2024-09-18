@@ -25,11 +25,11 @@ class UserController extends Controller
         try {
                 $data = $request->except(['image']);
                 $oldFilePath = $this->currentUser?->userDetails?->image;
-                
+
                 if ($request->hasFile('image')) {
                     $data['image'] = uploadImage("image", $oldFilePath, $request->file('image'));
                 }
-                
+
                 $criteria = ['user_id' => $this->currentUser->id];
                 $this->currentUser->userDetails()->updateOrCreate($criteria, $data);
                 DB::commit();
