@@ -27,7 +27,12 @@ class UserController extends Controller
                 $oldFilePath = $this->currentUser?->userDetails?->image;
                 $parsedUrl   = parse_url($oldFilePath);
 
-                $oldFilePath = isset($parsedUrl['path']) ? $parsedUrl['path'] : null;
+                // $oldFilePath = isset($parsedUrl['path']) ? $parsedUrl['path'] : null;
+
+                if (app()->environment('production')) {
+                    $baseUrl = '/dev_showtime_api/public';
+                    $oldFilePath = str_replace($baseUrl, '', $oldFilePath);
+                }
 
                 if ($request->hasFile('image')) {
                     $data['image'] = uploadImage("image", $oldFilePath, $request->file('image'));
