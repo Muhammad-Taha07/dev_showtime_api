@@ -23,12 +23,14 @@ class UserDetails extends Model
         'updated_at',
     ];
 
+
+
     public function users()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function getImageAttribute($value) {
-        return url($value);
-    }
+    // public function getImageAttribute($value) {
+    //     return env('MEDIA_URL') . $value;
+    // }
 }
