@@ -25,6 +25,9 @@ class UserController extends Controller
         try {
                 $data = $request->except(['image']);
                 $oldFilePath = $this->currentUser?->userDetails?->image;
+                $parsedUrl   = parse_url($oldFilePath);
+
+                $oldFilePath = isset($parsedUrl['path']) ? $parsedUrl['path'] : null;
 
                 if ($request->hasFile('image')) {
                     $data['image'] = uploadImage("image", $oldFilePath, $request->file('image'));

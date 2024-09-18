@@ -30,7 +30,8 @@ class UserDetails extends Model
         return $this->belongsTo(User::class);
     }
 
-    // public function getImageAttribute($value) {
-    //     return env('MEDIA_URL') . $value;
-    // }
+    public function getImageAttribute($value) {
+        return env('APP_URL') . $value;
+    }
+
 }
