@@ -27,7 +27,7 @@ class CommentController extends Controller
         try {
             $media_id = $request->id;
 
-            $comments = ReportedComment::where('media_collection_id', $media_id)
+            $comments = Comment::where('media_collection_id', $media_id)
             ->with(['user:id,email,first_name,last_name', 'user.userDetails:id,user_id,image'])->get();
 
             if($comments->isEmpty()) {
