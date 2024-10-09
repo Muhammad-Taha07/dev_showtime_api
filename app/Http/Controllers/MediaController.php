@@ -71,6 +71,9 @@ class MediaController extends Controller
     
                 $thumbnailUrl   = 'medias/' . $media->id . '/' . basename($thumbnailPath);
                 $media->update(['thumbnail_url' => $thumbnailUrl]);
+                $thumb_url_response = env('APP_URL') . '/' . $thumbnailUrl;
+            } else {
+                $thumb_url_response = NULL;
             }
             
             DB::commit();
@@ -84,7 +87,7 @@ class MediaController extends Controller
                 'status'        => $media->status,
                 'type'          => $media->type,
                 'media_url'     => $mediaItem->getUrl(),
-                'thumbnail_url' => env('APP_URL') . '/' . $thumbnailUrl,
+                'thumbnail_url' => $thumb_url_response,
             ];
 
             return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Media Uploaded Successfully, Waiting for admin Approval.", $response);
@@ -156,7 +159,8 @@ class MediaController extends Controller
                 'title'         => $media->title,
                 'description'   => $media->description,
                 'media_url'     => $mediaUrl,
-                'thumbnail_url' => env('APP_URL') . '/' . $media->thumbnail_url,
+                // 'thumbnail_url' => env('APP_URL') . '/' . $media->thumbnail_url,
+                'thumbnail_url' => $media->thumbnail_url,
                 'views_count'   => $media->views->count(),
                 'likes_count'   => $media->likes->count(),
                 'media_type'    => $media->type,
@@ -411,7 +415,8 @@ class MediaController extends Controller
                     'title'         => $media->title,
                     'description'   => $media->description,
                     'media_url'     => $mediaUrl,
-                    'thumbnail_url' => env('APP_URL') . '/' . $media->thumbnail_url,
+                    // 'thumbnail_url' => env('APP_URL') . '/' . $media->thumbnail_url,
+                    'thumbnail_url' => $media->thumbnail_url,
                     'views_count'   => $media->views->count(),
                     'media_type'    => $media->type,
                     'user'          => [
