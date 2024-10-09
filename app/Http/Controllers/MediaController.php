@@ -236,7 +236,7 @@ class MediaController extends Controller
                     'title'         => $media->title,
                     'description'   => $media->description,
                     'media_url'     => $mediaUrl,
-                    'thumbnail_url' => env('APP_URL') . '/' . $media->thumbnail_url,
+                    'thumbnail_url' => $media->thumbnail_url,
                     'views_count'   => $media->views->count(),
                     'media_type'    => $media->type,
                     'user'          => [

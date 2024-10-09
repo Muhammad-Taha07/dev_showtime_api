@@ -53,10 +53,17 @@ class MediaCollection extends Model implements HasMedia
         return $value;
     }
 
-    public function getThumbnailUrlAttribute($value)
-    {
-        return url($value);
+    // Check if in production environment and $value is not null
+    public function getThumbnailUrlAttribute($value) {
+
+        if (app()->environment('production') && $value) {
+            return env('APP_URL') . '/' . $value;
+        }
+
+        return $value;
     }
+
+    
 
     public function comments()
     {
