@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\User;
 use App\Models\View;
+use App\Models\Rating;
 use App\Models\Comment;
 use App\Models\Favorite;
 use Spatie\MediaLibrary\HasMedia;
@@ -73,6 +74,11 @@ class MediaCollection extends Model implements HasMedia
     public function likes()
     {
         return $this->hasMany(MediaLike::class);
+    }
+
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class);
     }
 
     public function favoritedBy(): BelongsToMany
