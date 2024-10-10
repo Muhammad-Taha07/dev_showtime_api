@@ -347,7 +347,8 @@ class MediaController extends Controller
                 $this->currentUser->likeMedias()->detach($media_id);
                 return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Media Unliked.");
             } else {
-                $this->currentUser->likeMedias()->attach($media_id, ['rating' => $request->rating]);
+                // $this->currentUser->likeMedias()->attach($media_id, ['rating' => $request->rating]);
+                $this->currentUser->likeMedias()->attach($media_id);
                 
                 // Notification needed for other user.
                 return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Media liked.");
@@ -467,20 +468,22 @@ class MediaController extends Controller
             $rating_value = (float) $request->rating;
 
             $media = MediaCollection::where('id', $media_id)->first();
-            
-            if(!$media) {
-                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Media file does not exist', collect([]));
+
+            if($media && $media->status == 'approved') {
+
+                $rating = Rating::updateOrCreate([
+                        'user_id' => $authUser->id,
+                        'media_collection_id' => $media_id,
+                    ],
+                    [
+                        'rating' => $rating_value
+                    ]);
+    
+                DB::commit();
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Rating Recorded Successfully', collect([]));
             }
 
-            $rating = Rating::create([
-                'user_id'               =>  $authUser->id,
-                'media_collection_id'   =>  $media_id,
-                'rating'                =>  $rating_value,  
-            ]);
-
-            DB::commit();
-
-            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Rating Recorded Successfully', collect([]));
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Media file does not exist', collect([]));
             
         } catch (Exception $e) {
             DB::rollback();
