@@ -53,14 +53,14 @@ class BaseResponse implements Responsable
      */
     public function __construct(int $httpCode, int $statusCode, string $message, mixed $data = [], $token = null, $view = null, $pagination = null, $emptyArray = false)
     {
-        $this->httpCode    = $httpCode;
-        $this->statusCode    = $statusCode;
-        $this->message = $message;
-        $this->data    = $data;
-        $this->token    = $token;
-        $this->view    = $view;
-        $this->pagination    = $pagination;
-        $this->emptyArray    = $emptyArray;
+        $this->httpCode     = $httpCode;
+        $this->statusCode   = $statusCode;
+        $this->message      = $message;
+        $this->data         = $data;
+        $this->token        = $token;
+        $this->view         = $view;
+        $this->pagination   = $pagination;
+        $this->emptyArray   = $emptyArray;
     }
 
     /**
