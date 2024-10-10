@@ -42,7 +42,7 @@ Route::middleware(["auth:api", "check.user.status"])->prefix('user')->group(func
         Route::post('/delete-account', 'deleteUserAccount')->name('user-delete-account');
     });
 
-// Video Routes
+// Media Routes
     Route::controller(MediaController::class)->group(function () {
         Route::get('/get-all-medias', 'getAllMedias')->name('get-all-medias');
         Route::get('/get-media/{id}', 'getMedia')->name('open-media');
@@ -53,6 +53,7 @@ Route::middleware(["auth:api", "check.user.status"])->prefix('user')->group(func
         Route::post('/like-video', 'toggleLikeDislike')->name('user-like-video');
         Route::post('/favorite-toggle', 'toggleFavorite')->name('user-toggle-favorite');
         Route::get('/get-favorite-media', 'getFavoriteMedia')->name('user-favorite-media');
+        Route::post('/rate-media', 'rateMedia')->name('rate-media');
     });
 
 // Comment Routes
