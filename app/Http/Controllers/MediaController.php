@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use FFMpeg\FFMpeg;
 use App\Models\User;
-use App\Models\MediaCollection;
+use App\Models\Rating;
 use Illuminate\Http\Request;
+use App\Models\MediaCollection;
 use FFMpeg\Coordinate\TimeCode;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Responses\BaseResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\MediaRequest\MediaLikeRequest;
 use App\Http\Requests\MediaRequest\VideoLikeRequest;
@@ -453,6 +454,37 @@ class MediaController extends Controller
 
         } catch (Exception $e) {
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);        
+        }
+    }
+
+    public function rateMedia(Request $request) 
+    {
+        try {
+            DB::beginTransaction();
+
+            $authUser     = $this->currentUser;
+            $media_id     = $request->media_id;
+            $rating_value = (float) $request->rating;
+
+            $media = MediaCollection::where('id', $media_id)->first();
+            
+            if(!$media) {
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Media file does not exist', collect([]));
+            }
+
+            $rating = Rating::create([
+                'user_id'               =>  $authUser->id,
+                'media_collection_id'   =>  $media_id,
+                'rating'                =>  $rating_value,  
+            ]);
+
+            DB::commit();
+
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'Rating Recorded Successfully', collect([]));
+            
+        } catch (Exception $e) {
+            DB::rollback();
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);   
         }
     }
 
