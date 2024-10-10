@@ -54,6 +54,15 @@ class UsersTableSeeder extends Seeder
                 'is_admin' => 0,
                 'status' => 1,
             ],
+            [
+                'first_name' => 'Bilal',
+                'last_name' => 'Khan',
+                'email' => 'bilal@gmail.com',
+                'password' => Hash::make('Abcd123*'),
+                'is_verified' => 1,
+                'is_admin' => 0,
+                'status' => 1,
+            ],
         ];
 
         // Insert the additional users into the database
