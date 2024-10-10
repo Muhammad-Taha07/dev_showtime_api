@@ -100,7 +100,7 @@ class MediaController extends Controller
 
     }
 
-    // Get All Medias | REQUIRED: THUMBNAIL
+    // Get All Medias
     public function getAllMedias(Request $request)
     {
         try {
@@ -114,13 +114,19 @@ class MediaController extends Controller
 
         foreach ($medias as $media) {
             $mediaItem            = $media->getFirstMedia();
+
+            // Fetch average rating
+            $average_rating = $media->ratings()->avg('rating');
+            $average_rating = number_format((float)$average_rating, 2, '.', '');
             
             $media['media_url']   = $mediaItem->getUrl();
             $media['views_count'] = $media->views?->count() ?? 0;
+            $media['likes_count'] = $media->likes->count();
+            $media['ratings']     = $average_rating;
             unset($media['media'], $media['views']);
         }
         
-        $sortedMedias = $medias->sortByDesc('views_count')->values();
+        $sortedMedias   = $medias->sortByDesc('views_count')->values();
         $shuffledMedias = $medias->shuffle()->values();
         
         $data = [
@@ -151,8 +157,11 @@ class MediaController extends Controller
 
             $mediaItem = $media->getMedia();
             $mediaUrl  = $mediaItem->first()?->getUrl();
-
             $owner     = $media->user;
+
+            // Fetch average rating
+            $average_rating = $media->ratings()->avg('rating');
+            $average_rating = number_format((float)$average_rating, 2, '.', '');
 
             // Creating Response data for API
             $response = [
@@ -160,10 +169,10 @@ class MediaController extends Controller
                 'title'         => $media->title,
                 'description'   => $media->description,
                 'media_url'     => $mediaUrl,
-                // 'thumbnail_url' => env('APP_URL') . '/' . $media->thumbnail_url,
                 'thumbnail_url' => $media->thumbnail_url,
                 'views_count'   => $media->views->count(),
                 'likes_count'   => $media->likes->count(),
+                'ratings'       => $average_rating,
                 'media_type'    => $media->type,
                 'user'          => [
                     'user_id'   => $owner->id,
@@ -184,7 +193,6 @@ class MediaController extends Controller
                 'likes'         => $media->likes->map(function($like) {
                     return [
                         'like_id'    => $like->id,
-                        'rating'     => $like->rating,
                         'user'       => [
                             'user_id'   => $like->user->id,
                             'full_name' => $like->user->fullname,
@@ -222,10 +230,9 @@ class MediaController extends Controller
                     ->with('user:id,first_name,last_name');
                 },
                 'likes' => function($query) {
-                    $query->select('id', 'media_collection_id', 'user_id', 'rating')
+                    $query->select('id', 'media_collection_id', 'user_id')
                     ->with('user:id,first_name,last_name');
                 }])->get();
-
 
             if($medias->isEmpty()) {
                 return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'No Media files found', $medias);
@@ -235,6 +242,10 @@ class MediaController extends Controller
                 $mediaItem  = $media->getFirstMedia();
                 $mediaUrl   = $mediaItem ? $mediaItem->getUrl() : null;
                 $owner      = $media->user;
+
+                // Fetch average rating
+                $average_rating = $media->ratings()->avg('rating');
+                $average_rating = number_format((float)$average_rating, 2, '.', '');
     
                 return [
                     'id'            => $media->id,
@@ -243,6 +254,8 @@ class MediaController extends Controller
                     'media_url'     => $mediaUrl,
                     'thumbnail_url' => $media->thumbnail_url,
                     'views_count'   => $media->views->count(),
+                    'likes_count'   => $media->likes->count(),
+                    'ratings'       => $average_rating,
                     'media_type'    => $media->type,
                     'user'          => [
                         'user_id'   => $owner->id,
@@ -263,7 +276,6 @@ class MediaController extends Controller
                     'likes'         => $media->likes->map(function($like) {
                         return [
                             'like_id'    => $like->id,
-                            'rating'     => $like->rating,
                             'user'       => [
                                 'user_id'   => $like->user->id,
                                 'full_name' => $like->user->fullname,
@@ -398,7 +410,7 @@ class MediaController extends Controller
                     ->with('user:id,first_name,last_name');
                 },
                 'likes' => function($query) {
-                    $query->select('id', 'media_collection_id', 'user_id', 'rating')
+                    $query->select('id', 'media_collection_id', 'user_id')
                     ->with('user:id,first_name,last_name');
                 }])->get();
 
@@ -412,6 +424,10 @@ class MediaController extends Controller
                 $mediaUrl   = $mediaItem ? $mediaItem->getUrl() : null;
                 $owner      = $media->user;
 
+                // Fetch average rating
+                $average_rating = $media->ratings()->avg('rating');
+                $average_rating = number_format((float)$average_rating, 2, '.', '');
+
                 return [
                     'id'            => $media->id,
                     'title'         => $media->title,
@@ -420,6 +436,8 @@ class MediaController extends Controller
                     // 'thumbnail_url' => env('APP_URL') . '/' . $media->thumbnail_url,
                     'thumbnail_url' => $media->thumbnail_url,
                     'views_count'   => $media->views->count(),
+                    'likes_count'   => $media->likes->count(),
+                    'ratings'       => $average_rating,
                     'media_type'    => $media->type,
                     'user'          => [
                         'user_id'   => $owner->id,
@@ -440,7 +458,6 @@ class MediaController extends Controller
                     'likes'         => $media->likes->map(function($like) {
                         return [
                             'like_id'    => $like->id,
-                            'rating'     => $like->rating,
                             'user'       => [
                                 'user_id'   => $like->user->id,
                                 'full_name' => $like->user->fullname,
@@ -457,7 +474,7 @@ class MediaController extends Controller
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);        
         }
     }
-
+    // Rating Media
     public function rateMedia(Request $request) 
     {
         try {
@@ -490,6 +507,5 @@ class MediaController extends Controller
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);   
         }
     }
-
 
 }
