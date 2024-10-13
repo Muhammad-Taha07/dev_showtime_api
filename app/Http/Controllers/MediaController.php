@@ -119,11 +119,12 @@ class MediaController extends Controller
             $average_rating = $media->ratings()->avg('rating');
             $average_rating = number_format((float)$average_rating, 2, '.', '');
             
-            $media['media_url']   = $mediaItem->getUrl();
-            $media['views_count'] = $media->views?->count() ?? 0;
-            $media['likes_count'] = $media->likes->count();
-            $media['is_liked']    = $media->likes()->where('user_id', $this->currentUser->id)->exists() ? 1 : 0;
-            $media['ratings']     = $average_rating;
+            $media['media_url']    = $mediaItem->getUrl();
+            $media['views_count']  = $media->views?->count() ?? 0;
+            $media['likes_count']  = $media->likes->count();
+            $media['is_liked']     = $media->likes()->where('user_id', $this->currentUser->id)->exists() ? 1 : 0;
+            $media['is_favorited'] = $media->favoritedBy()->where('user_id', $this->currentUser->id)->exists() ? 1 : 0;
+            $media['ratings']      = $average_rating;
             unset($media['media'], $media['views']);
         }
         
@@ -174,6 +175,7 @@ class MediaController extends Controller
                 'views_count'   => $media->views->count(),
                 'likes_count'   => $media->likes->count(),
                 'is_liked'      => $media->likes()->where('user_id', $this->currentUser->id)->exists() ? 1 : 0,
+                'is_favorited'  => $media->favoritedBy()->where('user_id', $this->currentUser->id)->exists() ? 1 : 0,
                 'ratings'       => $average_rating,
                 'media_type'    => $media->type,
                 'user'          => [
@@ -257,6 +259,8 @@ class MediaController extends Controller
                     'thumbnail_url' => $media->thumbnail_url,
                     'views_count'   => $media->views->count(),
                     'likes_count'   => $media->likes->count(),
+                    'is_liked'      => $media->likes()->where('user_id', $this->currentUser->id)->exists() ? 1 : 0,
+                    'is_favorited'  => $media->favoritedBy()->where('user_id', $this->currentUser->id)->exists() ? 1 : 0,    
                     'ratings'       => $average_rating,
                     'media_type'    => $media->type,
                     'user'          => [
@@ -440,6 +444,7 @@ class MediaController extends Controller
                     'views_count'   => $media->views->count(),
                     'likes_count'   => $media->likes->count(),
                     'is_liked'      => $media->likes()->where('user_id', $this->currentUser->id)->exists() ? 1 : 0,
+                    'is_favorited'  => $media->favoritedBy()->where('user_id', $this->currentUser->id)->exists() ? 1 : 0,
                     'ratings'       => $average_rating,
                     'media_type'    => $media->type,
                     'user'          => [
