@@ -23,6 +23,7 @@ class ReportComment extends FormRequest
     {
         return [
             'comment_id'    =>  'required|integer',
+            'reason'        =>  'required',
         ];
     }
 
@@ -39,6 +40,7 @@ class ReportComment extends FormRequest
     {
         return [
             'comment_id'    =>   'Comment ID',
+            'reason'        =>   'Reporting Reasong',
         ];
     }
 }

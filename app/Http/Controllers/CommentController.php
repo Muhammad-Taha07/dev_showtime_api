@@ -119,7 +119,7 @@ class CommentController extends Controller
                 'comment_id'   =>  $comment->id,
                 'reporter_id'  =>  $this->currentUser->id,
                 'comment'      =>  $comment->comment,
-                // 'reason'       =>  $request->reason,
+                'reason'       =>  $request->reason,
             ]);
 
             // Automatic Ban user once the reporting count reaches to 3.

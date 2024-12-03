@@ -167,6 +167,26 @@ class AdminController extends Controller
         }
     }
 
+    public function unBanUserAccount(Request $request)
+    {
+        try {
+            $user_id = $request->id;
+            $user    = User::find($user_id);
+
+            if($user->status == config('constants.user.active')) {
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, $user->fullname . ' is already Unbanned');
+            }
+
+            $user->status = config('constants.user.active');
+            $user->save();
+            
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'User Unbanned Successfully', $user);
+
+        } catch (Exception $e) {
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
+        }
+    }
+
     public function pushNotification($currentUser, $otherUser, $message, $notificationType = '') {
         
         $extras = [
