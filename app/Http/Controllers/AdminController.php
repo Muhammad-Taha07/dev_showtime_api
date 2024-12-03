@@ -158,7 +158,7 @@ class AdminController extends Controller
             }
 
             $user->status = config('constants.user.banned');
-            $user = $user->save();
+            $user->save();
             
             return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'User Banned Successfully', $user);
 
