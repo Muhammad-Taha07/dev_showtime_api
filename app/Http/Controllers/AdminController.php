@@ -166,7 +166,8 @@ class AdminController extends Controller
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
         }
     }
-
+    
+    // Unban User Account Function
     public function unBanUserAccount(Request $request)
     {
         try {
@@ -181,6 +182,29 @@ class AdminController extends Controller
             $user->save();
             
             return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'User Unbanned Successfully', $user);
+
+        } catch (Exception $e) {
+            return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
+        }
+    }
+
+    // Get Banned Users list
+    public function getBannedUsers()
+    {
+        try {
+            $users = User::where('status', config('constants.user.banned'))->with('userDetails')->get();
+
+            if($users->isEmpty()) {
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "No Banned Users Found", collect([]));
+            }
+
+            $users = $users->map(function($user) {
+                $user->profile_image = $user->userDetails ? $user->userDetails->image : null;
+                unset($user->userDetails);
+                return $user;
+            });
+
+            return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Users Found Successfully", $users);
 
         } catch (Exception $e) {
             return new BaseResponse(STATUS_CODE_BADREQUEST, STATUS_CODE_BADREQUEST, $e->getMessage() . $e->getLine() . $e->getFile() . $e);
