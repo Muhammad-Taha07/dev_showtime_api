@@ -72,7 +72,7 @@ Route::middleware(['auth:api', 'check.admin'])->prefix('admin')->group(function 
         Route::post('/update-media-status', 'updateMediaStatus')->name('admin-approve-media');
         Route::get('/get-reported-comments', 'getReportedComments')->name('admin-get-reports');
         Route::get('/get-banned-users', 'getBannedUsers')->name('admin-get-ban-users');
-        Route::post('/ban-user/{id}', 'banUserAccount')->name('admin-ban-user');
+        Route::post('/ban-user', 'banUserAccount')->name('admin-ban-user');
         Route::post('/unban-user/{id}', 'unBanUserAccount')->name('admin-unban-user');
     });
 });

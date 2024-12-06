@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreign('comment_id')->references('id')->on('comments')->onDelete('cascade');
             $table->text('comment');
             $table->text('reason')->nullable();
+            $table->tinyInteger('status')->default(0); // 0 => Unresolved Dispute, 1  =>  Resolved Dispute.
             $table->timestamps();
         });
     }

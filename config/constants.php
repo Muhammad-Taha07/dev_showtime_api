@@ -4,7 +4,7 @@
 return [
     'user' => [
         'active'        => 1,
-        'banned'       => 2,
+        'banned'        => 2,
     ],
 
     'video' =>  [
@@ -17,6 +17,11 @@ return [
         'pending'       => 0,
         'approved'      => 1,
         'rejected'      => 2,
+    ],
+
+    'reports' =>  [
+        'unresolved'    => 0,
+        'resolved'      => 1,
     ],
 
 ];

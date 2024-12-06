@@ -129,11 +129,11 @@ class AdminController extends Controller
     {
         try {
                 $reportedComments = ReportedComment::with([
-                    'comment.user:id,email,first_name,last_name', 
-                    'comment.user.userDetails:id,user_id,image', 
+                    'comment.user:id,email,first_name,last_name',
+                    'comment.user.userDetails:id,user_id,image',
                     'reporter:id,email,first_name,last_name',
                     'reporter.userDetails:id,user_id,address,image'
-                ])->get();
+                ])->where('status', config('constants.reports.unresolved'))->get();
 
                 if($reportedComments->isEmpty()) {
                     return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'No Comments have been reported yet!', $reportedComments);
@@ -152,6 +152,10 @@ class AdminController extends Controller
         try {
             $user_id = $request->id;
             $user    = User::find($user_id);
+
+            if(!$user || $user->is_admin) {
+                return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, 'User not Found');
+            }
 
             if($user->status == config('constants.user.banned')) {
                 return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, $user->fullname . ' is already banned from the App');
