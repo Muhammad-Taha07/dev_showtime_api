@@ -179,7 +179,7 @@ table, td { color: #000000; } #u_body a { color: #0000ee; text-decoration: under
         
   <div style="font-size: 14px; font-weight: 700; line-height: 140%; text-align: center; word-wrap: break-word;">
     <p style="line-height: 140%;">Please verify your account by entering this</p>
-<p style="line-height: 140%;">4-digit code in Showtime™ Mobile Application.</p>
+<p style="line-height: 140%;">4-digit code in 11'O Clock Number Mobile Application.</p>
   </div>
 
       </td>
@@ -192,7 +192,7 @@ table, td { color: #000000; } #u_body a { color: #0000ee; text-decoration: under
     <tr>
       <td style="overflow-wrap:break-word;word-break:break-word;padding:30px 10px 10px;font-family:arial,helvetica,sans-serif;" align="left">
 
-    <h4 style="margin: 0px; line-height: 140%; text-align: center; word-wrap: break-word; font-family: 'Montserrat',sans-serif; font-size: 15px; font-weight: 400;"><p>We’re thrilled to have you join the Showtime™ family! where entertainment meets excitement. From trending videos to exclusive media uploads, we’re here to make sure you have an unforgettable experience.</p>
+    <h4 style="margin: 0px; line-height: 140%; text-align: center; word-wrap: break-word; font-family: 'Montserrat',sans-serif; font-size: 15px; font-weight: 400;"><p>We’re thrilled to have you join the 11'O Clock Number family! where entertainment meets excitement. From trending videos to exclusive media uploads, we’re here to make sure you have an unforgettable experience.</p>
 <p>Stay tuned, explore our features, and let the entertainment unfold!</p></h4>
 
 
