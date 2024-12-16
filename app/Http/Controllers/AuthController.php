@@ -39,6 +39,7 @@ class AuthController extends Controller
                 'first_name'    =>      $data['first_name'],
                 'last_name'     =>      $data['last_name'],
                 'email'         =>      $data['email'],
+                'fcm_token'     =>      $data['fcmToken'],
                 'password'      =>      Hash::make($data['password']),
             ]);
             
@@ -78,7 +79,7 @@ class AuthController extends Controller
             }
 
                 $user = auth('api')->user();
-                // $agent->fcm_token fcm_token= $request->;
+                $user->fcm_token = $request->fcmToken;
                 $user->last_login = date('Y-m-d H:i:s');
                 $user->save();
          
@@ -195,8 +196,8 @@ class AuthController extends Controller
     {
         try {
             if (auth('api')->check()) {
-                // $this->currentUser->fcm_token = null;
-                // $this->currentUser->save();
+                $this->currentUser->fcm_token = null;
+                $this->currentUser->save();
                 auth()->guard('api')->logout();
     
                 return new BaseResponse(STATUS_CODE_OK, STATUS_CODE_OK, "Successfully logout");
