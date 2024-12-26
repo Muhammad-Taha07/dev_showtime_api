@@ -39,7 +39,7 @@ class AuthController extends Controller
                 'first_name'    =>      $data['first_name'],
                 'last_name'     =>      $data['last_name'],
                 'email'         =>      $data['email'],
-                'fcm_token'     =>      $data['fcmToken'],
+                'fcm_token'     =>      $data['fcm_token'],
                 'password'      =>      Hash::make($data['password']),
             ]);
             
@@ -79,7 +79,7 @@ class AuthController extends Controller
             }
 
                 $user = auth('api')->user();
-                $user->fcm_token = $request->fcmToken;
+                $user->fcm_token = $request->fcm_token;
                 $user->last_login = date('Y-m-d H:i:s');
                 $user->save();
          
