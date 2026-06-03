@@ -6,7 +6,7 @@ use FFMpeg\Coordinate\Dimension;
 use Illuminate\Support\Facades\Storage;
 
 if(!function_exists('generateThumbnail')) {
-    function generateThumbnail($videoPath)
+   /* function generateThumbnail($videoPath)
     {
         $ffmpeg = FFMpeg::create([
             'ffmpeg.binaries'  => base_path(env('FFMPEG_BINARIES_PATH')),
@@ -19,6 +19,24 @@ if(!function_exists('generateThumbnail')) {
         $thumbnailPath = dirname($videoPath) . '/thumb_' . pathinfo($videoPath, PATHINFO_FILENAME) . '.png';
         $frame->save($thumbnailPath);
 
+        return $thumbnailPath;
+    }
+    */
+    function generateThumbnail($videoPath)
+    {
+        $ffmpeg = FFMpeg::create([
+            'ffmpeg.binaries'  => env('FFMPEG_PATH'),
+            'ffprobe.binaries' => env('FFPROBE_PATH'),
+        ]);
+    
+        $video = $ffmpeg->open($videoPath);
+    
+        $frame = $video->frame(\FFMpeg\Coordinate\TimeCode::fromSeconds(2));
+    
+        $thumbnailPath = dirname($videoPath) . '/thumb_' . pathinfo($videoPath, PATHINFO_FILENAME) . '.png';
+    
+        $frame->save($thumbnailPath);
+    
         return $thumbnailPath;
     }
 }
